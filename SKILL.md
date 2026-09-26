@@ -1,7 +1,7 @@
 ---
 name: pp-openpayments
-description: "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps no other tool computes. Trigger phrases: `who does Stryker pay`, `industry payments to doctors`, `open payments for NPI`, `sunshine act payments`, `which PIs were paid for this trial`, `use openpayments`, `run openpayments-pp-cli`."
-author: "Claude"
+description: "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data. Trigger phrases: `who does Stryker pay`, `industry payments to doctors`, `open payments for NPI`, `sunshine act payments`, `which PIs were paid for this trial`, `key opinion leaders in pain medicine`, `new or rising industry payment relationships`, `recruiting trials that need local sites`, `use openpayments`, `run openpayments-pp-cli`."
+author: "Greg Van Horn"
 license: "Apache-2.0"
 argument-hint: "<command> [args] | install cli|mcp"
 allowed-tools: "Read Bash"
@@ -37,7 +37,7 @@ go install github.com/mvanhorn/printing-press-library/library/health/openpayment
 
 If `--version` reports "command not found" after install, the runtime cannot see the binary directory on `$PATH`. Do not proceed with skill commands until verification succeeds.
 
-Sync the payments you care about (by state, specialty, NPI or company) into typed SQLite and answer dossier, leaderboard and year-over-year questions in under two seconds. Commands like kol, rising, research-sites and trials gaps join General, Research and Ownership data with ClinicalTrials.gov locally, with provenance on every row.
+Sync the payments you care about (by state, specialty, NPI or company) into typed SQLite and answer dossier, leaderboard and year-over-year questions locally. Commands like kol, rising, research-sites and trials gaps join General, Research and Ownership data with ClinicalTrials.gov, with provenance on every row.
 
 ## When to Use This CLI
 
@@ -53,10 +53,9 @@ Do not use this CLI for:
 
 ## Unique Capabilities
 
-These capabilities aren't available in any other tool for this API.
+These are computed locally from the synced Open Payments store (and ClinicalTrials.gov for trials commands).
 
 ### Relationship intelligence
-
 - **`kol`** — Rank physicians in a specialty and region by speaking and consulting dollars, number of paying companies and years active.
 
   _Reach for this when asked who the key opinion leaders are in a specialty or territory._
@@ -129,7 +128,6 @@ These capabilities aren't available in any other tool for this API.
   ```
 
 ### Trial-site intelligence
-
 - **`research-sites`** — Rank sites and principal investigators by research dollars, trials and sponsors for a specialty and region.
 
   _Use when scouting proven trial sites or PIs in a region._
@@ -167,7 +165,6 @@ These capabilities aren't available in any other tool for this API.
   ```
 
 ### Agent plumbing
-
 - **`ask`** — Print the local schema, a plain-word glossary and worked SQL examples for any question.
 
   _Use when no dedicated command fits and you need to write SQL._
@@ -209,7 +206,6 @@ openpayments-pp-cli which "<capability in your own words>"
 
 ## Recipes
 
-
 ### Top PA recipients
 
 ```bash
@@ -218,7 +214,7 @@ openpayments-pp-cli top --by recipient --state PA --year 2024 --limit 20 --agent
 
 Top 20 PA recipients by total general payments, narrowed to three fields.
 
-### Doctor dossier
+### Clinician dossier
 
 ```bash
 openpayments-pp-cli dossier 1234567890 --agent
@@ -276,11 +272,11 @@ Global format flags share one contract on promoted, novel, sync, and `--deliver`
 - **Previewable** — `--dry-run` shows the request without sending
 - **Offline-friendly** — sync/search commands can use the local SQLite store when available
 - **Non-interactive** — never prompts, every input is a flag
-- **Read-only** — do not use this CLI for create, update, delete, publish, comment, upvote, invite, order, send, or other mutating requests
+- **Read-only** — it never modifies CMS Open Payments or ClinicalTrials.gov data
 
 ### Response envelope
 
-Commands that read from the local store or the API wrap output in a provenance envelope:
+With `--agent`, commands wrap output in a provenance envelope (plain `--json` prints the bare result):
 
 ```json
 {
@@ -298,8 +294,7 @@ Agents should treat the CLI's path resolver as part of the runtime contract:
 - Use `--home <dir>` for one invocation, or set `OPENPAYMENTS_HOME=<dir>` to relocate all four path kinds under one root.
 - Use per-kind env vars only when a specific kind must diverge: `OPENPAYMENTS_CONFIG_DIR`, `OPENPAYMENTS_DATA_DIR`, `OPENPAYMENTS_STATE_DIR`, `OPENPAYMENTS_CACHE_DIR`.
 - Resolution order is per-kind env var, `--home`, `OPENPAYMENTS_HOME`, XDG (`XDG_CONFIG_HOME`, `XDG_DATA_HOME`, `XDG_STATE_HOME`, `XDG_CACHE_HOME`), then platform defaults.
-- `config` contains settings like `config.toml` and profiles. `data` contains `credentials.toml`, `data.db`, cookies, and auth sidecars. `state` contains persisted queries, jobs, and `teach.log`. `cache` contains regenerable HTTP/cache files.
-- Stored secrets live in `credentials.toml` under the data dir. Existing legacy `config.toml` secrets are read for compatibility and leave `config.toml` on the first auth write.
+- `config` contains settings like `config.toml` and profiles. `data` contains `data.db` (the synced Open Payments store). `state` contains persisted queries and `teach.log`. `cache` contains regenerable HTTP/cache files.
 - Run `openpayments-pp-cli doctor --fail-on warn` to surface path warnings. `agent-context` exposes a schema v4 `paths` block for agents that need the resolved dirs.
 - For MCP, pass relocation through the MCP host config. The MCP binary does not inherit CLI flags:
 
@@ -316,7 +311,7 @@ Agents should treat the CLI's path resolver as part of the runtime contract:
   }
   ```
 
-Fleet precedence: an inherited per-kind env var overrides an explicit `--home` for that kind. Use `OPENPAYMENTS_HOME` or per-kind vars as durable fleet levers, and use `--home` only for a single invocation. Relocation is not reversible by unsetting env vars; move files manually before clearing `OPENPAYMENTS_HOME`, or `doctor` will not find credentials left under the former root.
+Fleet precedence: an inherited per-kind env var overrides an explicit `--home` for that kind. Use `OPENPAYMENTS_HOME` or per-kind vars as durable fleet levers, and use `--home` only for a single invocation. Relocation is not reversible by unsetting env vars; move files manually before clearing `OPENPAYMENTS_HOME`, or `doctor` will not find the local store (data.db) left under the former root.
 
 ## Automatic learning
 

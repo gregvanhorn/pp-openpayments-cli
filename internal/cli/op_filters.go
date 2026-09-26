@@ -128,10 +128,17 @@ func runLocal(ctx context.Context, cmd *cobra.Command, flags *rootFlags, db *sql
 }
 
 func printRows(cmd *cobra.Command, flags *rootFlags, rows []map[string]any) error {
-	if len(rows) == 0 && !flags.asJSON && !flags.agent && isTerminal(cmd.OutOrStdout()) {
-		fmt.Fprintln(cmd.ErrOrStderr(), "no matching rows in the local store (sync a wider scope or check filters)")
+	if rows == nil {
+		rows = make([]map[string]any, 0)
 	}
-	return flags.printJSON(cmd, rows)
+	if !wantsHumanTable(cmd.OutOrStdout(), flags) {
+		return printJSONFiltered(cmd.OutOrStdout(), rows, flags)
+	}
+	if len(rows) == 0 {
+		fmt.Fprintln(cmd.OutOrStdout(), "No matching rows in the local store (sync a wider scope or check filters).")
+		return nil
+	}
+	return printAutoTable(cmd.OutOrStdout(), rows)
 }
 
 // queryArgs runs a parameterized read and returns plain maps (drain-first).
@@ -244,7 +251,7 @@ func pickRecipient(ctx context.Context, db *sql.DB, arg string) (map[string]any,
 	}
 	switch len(cands) {
 	case 0:
-		return nil, notFoundErr(fmt.Errorf("no synced recipient matches %q; sync their scope (e.g. 'sync --years 2019-2025 --npi <NPI>')", arg))
+		return nil, notFoundErr(fmt.Errorf("no match for %q among synced recipients; sync their scope (e.g. 'sync --years 2019-2025 --npi <NPI>')", arg))
 	case 1:
 		return cands[0], nil
 	}

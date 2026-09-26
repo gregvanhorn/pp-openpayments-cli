@@ -1,0 +1,178 @@
+{
+  "live_check": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 5,
+    "features": [
+      {
+        "name": "KOL ranking",
+        "command": "kol",
+        "example": "openpayments-pp-cli kol --specialty \"Physical Medicine\" --state PA --agent",
+        "status": "prerequisite_unsynced",
+        "reason": "prerequisite_unsynced: local store is not populated; run sync before probing this command"
+      },
+      {
+        "name": "New recipients",
+        "command": "new-recipients",
+        "example": "openpayments-pp-cli new-recipients --year 2025 --state PA --agent",
+        "status": "prerequisite_unsynced",
+        "reason": "prerequisite_unsynced: local store is not populated; run sync before probing this command"
+      },
+      {
+        "name": "Rising relationships",
+        "command": "rising",
+        "example": "openpayments-pp-cli rising --state PA --year 2025 --limit 20 --agent",
+        "status": "prerequisite_unsynced",
+        "reason": "prerequisite_unsynced: local store is not populated; run sync before probing this command"
+      },
+      {
+        "name": "Research-site scouting",
+        "command": "research-sites",
+        "example": "openpayments-pp-cli research-sites --specialty \"Pain Medicine\" --state PA,NJ --agent",
+        "status": "prerequisite_unsynced",
+        "reason": "prerequisite_unsynced: local store is not populated; run sync before probing this command"
+      },
+      {
+        "name": "Trial gaps",
+        "command": "trials gaps",
+        "example": "openpayments-pp-cli trials gaps --condition \"low back pain\" --state PA,NJ --agent",
+        "status": "pass",
+        "output_sample": "{\n  \"meta\": {\n    \"source\": \"live\"\n  },\n  \"results\": [\n    {\n      \"conditions\": \"Chronic Pain; Low Back Pain\",\n      \"gap\": true,\n      \"in_region_site_count\": 1,\n      \"in_region_sites\": \"Altoona Center For Clinical Research (Duncansville, PA)\",\n      \"local_pis_paid_by_sponsor\": 0,\n      \"local_pis_paid_for_this_trial\": 0,\n      \"matched_open_payments_names\": \"\",\n      \"nct_id\": \"NCT07641504\",\n      \"phase\": \"PHASE2\",\n      \"sponsor\": \"Eli Lilly and Company\",\n      \"sponsor_class\": \"INDUSTRY\",\n      \"sponsor_matched\": false,\n      \"status\": \"RECRUITING\",\n      \"title\": \"A Chronic Pain Master Protocol (CPMP): A Study of LY4065967 in Participants With Chronic Low Back Pain\"\n    },\n    {\n      \"conditions\": \"Osteoarthritis, Knee; Diabetic Neuropathic Pain; Chronic Low-back Pain\",\n      \"gap\": true,\n      \"in_region_site_count\": 1,\n      \"in_region_sites\": \"Altoona Center For Clinical Research (Duncansville, PA)\",\n      \"local_pis_paid_by_sponsor\": 0,\n      \"local_pis_paid_for_this_trial\": 0,\n      \"matched_open_payments_names\": \"\",\n      \"nct_id\": \"NCT05986292\",\n      \"phase\": \"PHASE2\",\n      \"sponsor\": \"Eli Lilly and Company\",\n      \"sponsor_class\": \"INDUSTRY\",\n      \"sponsor_matched\": false,\n      \"status\": \"RECRUITING\",\n      \"title\": \"A Master Protocol Study (LY900028) of Multiple Intervention-Specific-Appendices (ISAs) in Participants With Chronic Pain\"\n    },\n    {\n      \"conditions\": \"Chronic Low-back Pain; Vertebrogenic Pain Syndrome\",\n      \"gap\": true,\n      \"in_region_site_count\": 1,\n      \"in_region_sites\": \"Allegheny General Hospital (Pittsburgh, PA)\",\n      \"local_pis_paid_by_sponsor\": 0,\n      \"local_pis_paid_for_this_trial\": 0,\n      \"matched_open_payments_names\": \"\",\n      \"nct_id\": \"NCT06827262\",\n      \"phase\": \"\",\n      \"sponsor\": \"Boston Scientific Corporation\",\n      \"sponsor_class\": \"INDUSTRY\",\n      \"sponsor_matched\": false,\n      \"status\": \"RECRUITING\",\n      \"title\": \"Intracept Minimally-invasive PROcedure for VErtebrogenic Back Pain\"\n    },\n    {\n      \"conditions\": \"Degenerative Disc Disease\",\n      \"gap\": true,\n      \"in_region_site_count\": 1,\n      \"in_region_sites\": \"Main Line Spine (King of Prussia, PA)\",\n      \"local_pis_paid_by_sponsor\": 0,\n      \"local_pis_paid_for_this_trial\": 0,\n      \"matched_open_payments_names\": \"\",\n      \"nct_id\": \"NCT07254806\",\n      \"phase\": \"PHASE3\",\n      \"sponsor\": \"DiscGenics, Inc.\",\n      \"sponsor_class\": \"INDUSTRY\",\n      \"sponsor_matched\": false,\n      \"status\": \"RECRUITING\",\n      \"title\": \"A Study to Evaluate the Effectiveness of IDCT (Intradiscal Cell Therapy) in Subjects With One Level, Symptomatic Mild to Moderate Lumbar Degenerative Disc Disease\"\n    },\n    {\n      \"conditions\": \"Chronic Pain; Intractable Pain; Low Back Pain; Chronic Low-back Pain; Chronic Leg Pain; Leg Pain\",\n      \"gap\": true,\n      \"in_region_site_count\": 1,\n      \"in_region_sites\": \"Fox Chase Pain Management (Trevose, PA)\",\n      \"local_pis_paid_by_sponsor\": 0,\n      \"local_pis_paid_for_this_trial\": 0,\n      \"matched_open_payments_names\": \"\",\n      \"nct_id\": \"NCT07190807\",\n      \"phase\": \"NA\",\n      \"sponsor\": \"Boston Scientific Corporation\",\n      \"sponsor_class\": \"INDUSTRY\",\n      \"sponsor_matched\": false,\n      \"status\": \"RECRUITING\",\n      \"title\": \"Managing Pain Using Optimized Sequences by Adjusting Parameters With Independent Current Control\"\n    }\n  ]\n}\n"
+      },
+      {
+        "name": "Recipient compare",
+        "command": "compare",
+        "example": "openpayments-pp-cli compare 1234567890 1987654321 --agent",
+        "status": "prerequisite_unsynced",
+        "reason": "prerequisite_unsynced: local store is not populated; run sync before probing this command"
+      },
+      {
+        "name": "Relationship timeline",
+        "command": "relationships",
+        "example": "openpayments-pp-cli relationships 1234567890 --agent",
+        "status": "pass",
+        "reason": "graceful empty: hint: local store has not been synced yet. Run 'openpayments-pp-cli sync' before trusting local results.\nError: no match for \"1234567890\" among synced recipients; sync their scope (e.g. 'sync --years 2019-2025 --npi \u003cNPI\u003e')",
+        "output_sample": "hint: local store has not been synced yet. Run 'openpayments-pp-cli sync' before trusting local results.\nError: no match for \"1234567890\" among synced recipients; sync their scope (e.g. 'sync --years 2019-2025 --npi \u003cNPI\u003e')\n"
+      },
+      {
+        "name": "Trial investigators",
+        "command": "investigators",
+        "example": "openpayments-pp-cli investigators --nct NCT04280705 --agent",
+        "status": "pass",
+        "output_sample": "{\n  \"meta\": {\n    \"source\": \"local\"\n  },\n  \"results\": []\n}\n"
+      },
+      {
+        "name": "Company overlap",
+        "command": "overlap",
+        "example": "openpayments-pp-cli overlap \"Stryker Corporation\" \"Zimmer Biomet\" --state PA --agent",
+        "status": "pass",
+        "output_sample": "{\n  \"meta\": {\n    \"source\": \"local\"\n  },\n  \"results\": {\n    \"company_a\": \"Stryker Corporation\",\n    \"company_b\": \"Zimmer Biomet\",\n    \"counts\": {\n      \"both_count\": null,\n      \"only_a\": null,\n      \"only_b\": null\n    },\n    \"only_a\": [],\n    \"only_b\": [],\n    \"shared\": []\n  }\n}\n"
+      },
+      {
+        "name": "Batch roster check",
+        "command": "roster",
+        "example": "openpayments-pp-cli roster --npi 1234567890,1987654321 --agent",
+        "status": "pass",
+        "output_sample": "{\n  \"meta\": {\n    \"source\": \"local\"\n  },\n  \"results\": [\n    {\n      \"found\": false,\n      \"npi\": \"1234567890\",\n      \"research_total\": 0,\n      \"top_companies\": \"\"\n    },\n    {\n      \"found\": false,\n      \"npi\": \"1987654321\",\n      \"research_total\": 0,\n      \"top_companies\": \"\"\n    }\n  ]\n}\n"
+      },
+      {
+        "name": "Agent question helper",
+        "command": "ask",
+        "example": "openpayments-pp-cli ask \"top companies paying PA pain doctors\"",
+        "status": "pass",
+        "output_sample": "{\"examples\":[{\"command\":\"openpayments-pp-cli top --by company --state PA --specialty \\\"Pain Medicine\\\" --year 2019-2025 --limit 10\",\"question\":\"Top 10 companies paying PA Pain Medicine doctors, 2019-2025\",\"score\":9,\"sql\":\"SELECT company, SUM(amount) total FROM payments_general WHERE state='PA' AND specialties LIKE '%Pain Medicine%' GROUP BY company ORDER BY total DESC LIMIT 10\"},{\"command\":\"openpayments-pp-cli top --by recipient --state PA --year 2024 --limit 20\",\"question\":\"Top 20 PA recipients by total general payments in 2024\",\"score\":4,\"sql\":\"SELECT npi, MAX(recipient_name) name, SUM(amount) total FROM payments_general WHERE state='PA' AND program_year=2024 GROUP BY npi ORDER BY total DESC LIMIT 20\"},{\"command\":\"openpayments-pp-cli new-recipients --year 2025 --state PA\",\"question\":\"Doctors in PA new to industry payments in 2025\",\"score\":1},{\"command\":\"openpayments-pp-cli near --zip 19002 --miles 25 --type research\",\"question\":\"Doctors within 25 miles of ZIP 19002 with research payments\",\"score\":1},{\"command\":\"openpayments-pp-cli research-sites --min-sponsors 3\",\"question\":\"Doctors who received research payments from 3+ sponsors\",\"score\":1}],\"glossary\":[{\"cms_field\":\"covered_recipient_npi, covered_recipient_first/last_name\",\"column\":\"npi, recipient_name\",\"meaning\":\"Covered recipient: physician or non-physician practitioner (NP, PA, CRNA...) identified by NPI.\",\"term\":\"doctor, clinician, recipient\"},{\"cms_field\":\"teaching_hospital_ccn\",\"column\":\"teaching_hospital_ccn, teaching_hospital_name\",\"meaning\":\"Hospital recipient, keyed by CMS Certification Number (CCN).\",\"term\":\"teaching hospital\"},{\"cms_field\":\"applicable_manufacturer_or_applicable_gpo_making_payment_name/_id\",\"column\":\"company, company_id\",\"meaning\":\"The manufacturer or GPO that made the payment. Research sponsors are this column in payments_research.\",\"term\":\"company, manufacturer, sponsor, payer\"},{\"cms_field\":\"total_amount_of_payment_usdollars\",\"column\":\"amount (REAL USD); ownership: amount_invested, value_of_interest\",\"meaning\":\"Payment value in US dollars. CMS publishes strings; the local store casts to REAL.\",\"term\":\"amount, dollars, paid\"},{\"cms_field\":\"covered_recipient_specialty_1..6\",\"column\":\"specialty (primary), specialties (all six, '; ' joined)\",\"meaning\":\"NUCC taxonomy path, e.g. 'Allopathic \u0026 Osteopathic Physicians|Pain Medicine|Interventional Pain Medicine'. Match with LIKE '%Pain Medicine%'.\",\"term\":\"specialty\"},{\"cms_field\":\"nature_of_payment_or_transfer_of_value\",\"column\":\"nature\",\"meaning\":\"Consulting Fee, Food and Beverage, Travel and Lodging, Royalty or License, Compensation for services ... speaker, Education, Grant, Gift, ...\",\"term\":\"nature, type of payment\"},{\"cms_field\":\"nature_of_payment_or_transfer_of_value\",\"column\":\"nature LIKE 'Compensation for%' OR nature='Honoraria'\",\"meaning\":\"Faculty/speaker compensation categories.\",\"term\":\"speaking, speaker fees\"},{\"cms_field\":\"clinicaltrials_gov_identifier, name_of_study\",\"column\":\"nct_id, name_of_study\",\"meaning\":\"ClinicalTrials.gov ID on research payments (payments_research).\",\"term\":\"trial, study, NCT\"},{\"cms_field\":\"principal_investigator_1..5_*\",\"column\":\"research_investigators.*\",\"meaning\":\"Up to five PIs per research payment, flattened one row per slot.\",\"term\":\"principal investigator, PI\"},{\"cms_field\":\"name_of_drug_or_biological_or_device_or_medical_supply_1..5\",\"column\":\"products.name, products.kind, products.category\",\"meaning\":\"Products tied to a payment (slots 1-5); kind is Drug, Biological, Device or Medical Supply.\",\"term\":\"product, drug, device\"},{\"cms_field\":\"program_year\",\"column\":\"program_year\",\"meaning\":\"Calendar year the payment was made (CMS publishes each June for the prior year).\",\"term\":\"year, program year\"},{\"cms_field\":\"date_of_payment (MM/DD/YYYY)\",\"column\":\"payment_date (YYYY-MM-DD)\",\"meaning\":\"Payment date normalized to ISO.\",\"term\":\"date\"},{\"cms_field\":\"recipient_state, recipient_city, recipient_zip_code\",\"column\":\"state, city, zip5\",\"meaning\":\"Recipient's primary business address (public record).\",\"term\":\"state, city, zip\"},{\"cms_field\":\"dispute_status_f…[truncated]"
+      },
+      {
+        "name": "Spend concentration",
+        "command": "concentration",
+        "example": "openpayments-pp-cli concentration \"Stryker Corporation\" --year 2024 --agent",
+        "status": "pass",
+        "reason": "graceful empty: hint: local store has not been synced yet. Run 'openpayments-pp-cli sync' before trusting local results.\nError: no match for \"Stryker Corporation\" in synced payments (check the name or sync that company's scope)",
+        "output_sample": "hint: local store has not been synced yet. Run 'openpayments-pp-cli sync' before trusting local results.\nError: no match for \"Stryker Corporation\" in synced payments (check the name or sync that company's scope)\n"
+      },
+      {
+        "name": "Radius search",
+        "command": "near",
+        "example": "openpayments-pp-cli near --zip 19002 --miles 25 --type research --agent",
+        "status": "pass",
+        "output_sample": "{\n  \"meta\": {\n    \"source\": \"local\"\n  },\n  \"results\": []\n}\n"
+      },
+      {
+        "name": "Change detection",
+        "command": "changed",
+        "example": "openpayments-pp-cli changed --since-last-sync --agent",
+        "status": "pass",
+        "output_sample": "{\n  \"meta\": {\n    \"source\": \"local\"\n  },\n  \"results\": {\n    \"changes\": [],\n    \"counts\": [],\n    \"note\": \"first sync of a scope records no per-row 'added' entries; re-syncs after a CMS refresh do\",\n    \"run\": null,\n    \"sync_run\": 0\n  }\n}\n"
+      },
+      {
+        "name": "Cooling relationships",
+        "command": "cooling",
+        "example": "openpayments-pp-cli cooling --state PA --year 2025 --agent",
+        "status": "pass",
+        "output_sample": "{\n  \"meta\": {\n    \"source\": \"local\"\n  },\n  \"results\": []\n}\n"
+      },
+      {
+        "name": "Sponsor trial map",
+        "command": "trials sponsor",
+        "example": "openpayments-pp-cli trials sponsor \"Medtronic\" --agent",
+        "status": "pass",
+        "output_sample": "{\n  \"meta\": {\n    \"source\": \"live\"\n  },\n  \"results\": {\n    \"matched_open_payments_names\": null,\n    \"sponsor\": \"Medtronic\",\n    \"trials\": [\n      {\n        \"nct_id\": \"NCT06604884\",\n        \"paid_pis\": 0,\n        \"payments\": 0,\n        \"phase\": \"\",\n        \"pi_names\": null,\n        \"research_total\": 0,\n        \"site_count\": 9,\n        \"sponsor\": \"Medtronic Neurovascular Clinical Affairs\",\n        \"status\": \"RECRUITING\",\n        \"title\": \"NV PSR INSPIRE-A Pipeline™ Vantage Post Approval Study\"\n      },\n      {\n        \"nct_id\": \"NCT07298473\",\n        \"paid_pis\": 0,\n        \"payments\": 0,\n        \"phase\": \"NA\",\n        \"pi_names\": null,\n        \"research_total\": 0,\n        \"site_count\": 30,\n        \"sponsor\": \"Medtronic Cardiac Ablation Solutions\",\n        \"status\": \"RECRUITING\",\n        \"title\": \"Conquer-AF Protocol for Redo Ablation Procedures in Recurrent Paroxysmal and Persistent Atrial Fibrillation Using the Sphere-9 Catheter and Affera Ablation System (Conquer-AF)\"\n      },\n      {\n        \"nct_id\": \"NCT05424484\",\n        \"paid_pis\": 0,\n        \"payments\": 0,\n        \"phase\": \"NA\",\n        \"pi_names\": null,\n        \"research_total\": 0,\n        \"site_count\": 13,\n        \"sponsor\": \"Medtronic - MITG\",\n        \"status\": \"ACTIVE_NOT_RECRUITING\",\n        \"title\": \"Mesh Augmented Reinforcement of Abdominal Wall Suture Line to Limit the Rate of Incisional Hernia Occurrence\"\n      },\n      {\n        \"nct_id\": \"NCT02701283\",\n        \"paid_pis\": 0,\n        \"payments\": 0,\n        \"phase\": \"NA\",\n        \"pi_names\": null,\n        \"research_total\": 0,\n        \"site_count\": 87,\n        \"sponsor\": \"Medtronic Cardiovascular\",\n        \"status\": \"ACTIVE_NOT_RECRUITING\",\n        \"title\": \"Medtronic Evolut Transcatheter Aortic Valve Replacement in Low Risk Patients\"\n      },\n      {\n        \"nct_id\": \"NCT07546682\",\n        \"paid_pis\": 0,\n        \"payments\": 0,\n        \"phase\": \"\",\n        \"pi_names\": null,\n        \"research_total\": 0,\n        \"site_count\": 1,\n        \"sponsor\": \"Medtronic\",\n        \"status\": \"RECRUITING\",\n        \"title\": \"Propel Drug-Eluting Sinus Implant Family IBUKI Cohort\"\n      },\n      {\n        \"nct_id\": \"NCT03118505\",\n        \"paid_pis\": 0,\n        \"payments\": 0,\n        \"phase\": \"NA\",\n        \"pi_names\": null,\n        \"research_total\": 0,\n        \"site_count\": 17,\n        \"sponsor\": \"Medtronic Spinal and Biologics\",\n        \"status\": \"ACTIVE_NOT_RECRUITING\",\n        \"title\": \"A Study of Infuse® Bone Graft With Mastergraft® Strip and Posterior Fixation for Posterolateral Fusion (PLF) Treatment of Multi-Level Degenerative Lumbosacral Spinal Conditions\"\n      },\n      {\n        \"nct_id\": \"NCT03320252\",\n        \"paid_pis\": 0,\n        \"payments\": 0,\n        \"phase\": \"\",\n        \"pi_names\": null,\n        \"research_total\": 0,\n        \"site_count\": 26,\n        \"sponsor\": \"Medtronic Cardiovascular\",\n        \"status\": \"ACTIVE_NOT_RECRUITING\",\n        \"title\": \"Endurant CHevAr New Indication Trial: ENCHANT\"\n      },\n      {\n        \"nct_id\": \"NCT05149755\",\n        \"paid_pis\": 0,\n        \"payments\": 0,\n        \"phase\": \"NA\",\n        \"pi_names\": null,\n        \"research_total\": 0,\n        \"site_count\": 94,\n        \"sponsor\": \"Medtronic Cardiovascular\",\n        \"status\": \"ACTIVE_NOT_RECRUITING\",\n        \"title\": \"Evolut™ EXPAND TAVR II Pivotal Trial\"\n      },\n      {\n        \"nct_id\": \"NCT06449378\",\n        \"paid_pis\": 0,\n        \"payments\": 0,\n        \"phase\": \"NA\",\n        \"pi_names\": null,\n        \"research_total\": 0,\n        \"site_count\": 13,\n        \"sponsor\": \"Medtronic - MITG\",\n        \"status\": \"ACTIVE_NOT_RECRUITING\",\n        \"title\": \"Transorb™ Self-Gripping Resorbable Mesh in High-risk Subjects Undergoing Open Repair of Ventral Hernia\"\n      },\n      {\n        \"nct_id\": \"NCT02088554\",\n        \"paid_pis\": 0,\n        \"payments\": 0,\n        \"phase\": \"NA\",\n        \"pi_names\": null,\n        \"research_total\": 0,\n        \"site_count\": 38,\n        \"sponsor\": \"Medtronic Cardiac Surgery\",\n        \"status\": \"ACTIVE_NOT_RECRUITING\",\n        \"title\": \"PERIGON Pivotal Trial\"\n      },\n      {\n        \"nct_id\": \"NCT05696444\"…[truncated]"
+      }
+    ],
+    "binary_refresh": {
+      "action": "rebuilt",
+      "stage_path": "/root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/working/openpayments-pp-cli/build/stage/bin/openpayments-pp-cli",
+      "binary_path": "/root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/working/openpayments-pp-cli/build/stage/bin/openpayments-pp-cli",
+      "reason": "staged binary was older than Go sources"
+    },
+    "ran_at": "2026-09-26T16:06:24.676762864Z",
+    "status": "available",
+    "checked": 16,
+    "evaluated": 11,
+    "pass_rate_pct": 100
+  },
+  "scorecard": {
+    "api_name": "openpayments",
+    "steinberger": {
+      "output_modes": 10,
+      "auth": 10,
+      "error_handling": 8,
+      "terminal_ux": 10,
+      "readme": 10,
+      "doctor": 10,
+      "agent_native": 10,
+      "mcp_quality": 10,
+      "mcp_description_quality": 10,
+      "mcp_token_efficiency": 10,
+      "mcp_remote_transport": 10,
+      "mcp_tool_design": 7,
+      "mcp_surface_strategy": 0,
+      "local_cache": 10,
+      "cache_freshness": 5,
+      "breadth": 10,
+      "vision": 10,
+      "workflows": 10,
+      "insight": 10,
+      "agent_workflow_readiness": 9,
+      "path_validity": 10,
+      "auth_protocol": 0,
+      "data_pipeline_integrity": 7,
+      "sync_correctness": 10,
+      "type_fidelity": 5,
+      "dead_code": 2,
+      "live_api_verification": 0,
+      "total": 89,
+      "percentage": 89
+    },
+    "competitor_scores": null,
+    "overall_grade": "A",
+    "gap_report": [
+      "MCP: 9 tools (9 public, 0 auth-required) — readiness: full"
+    ],
+    "unscored_dimensions": [
+      "mcp_surface_strategy",
+      "auth_protocol",
+      "live_api_verification"
+    ]
+  }
+}

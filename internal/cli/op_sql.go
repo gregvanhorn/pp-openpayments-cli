@@ -1,6 +1,6 @@
 package cli
 
-// pp:data-source auto
+// pp:data-source local
 
 import (
 	"context"
@@ -39,7 +39,7 @@ CMS API. 'FROM general:2024' is rewritten to that year's distribution ID,
 and Title_Case result keys are normalized to snake_case.`,
 		Example: `  openpayments-pp-cli sql "SELECT company, ROUND(SUM(amount)) total FROM payments_general WHERE state='PA' AND program_year=2024 GROUP BY company ORDER BY total DESC LIMIT 10"
   openpayments-pp-cli sql "[SELECT record_id,total_amount_of_payment_usdollars FROM general:2024][WHERE recipient_state = \"PA\"][LIMIT 5]"`,
-		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "auto"},
+		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "local"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if helpOnly(cmd, args) {
 				return cmd.Help()

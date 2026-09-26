@@ -76,14 +76,28 @@ func BulkSync(ctx context.Context, db *sql.DB, ds Dataset, typ string, scope Sco
 		return nil, err
 	}
 	run, _ := res.LastInsertId()
-	filter := filtersFor(typ, scope)[0]
-	if scope.Empty() {
-		filter = filterSpec{desc: "all"}
+	// One bulk pass covers every filter in the scope (e.g. PA and NJ); each
+	// is recorded and reconciled as its own sync scope afterwards.
+	var units []*scopeUnit
+	for _, f := range filtersFor(typ, scope) {
+		if f.piPass {
+			continue
+		}
+		units = append(units, &scopeUnit{key: fmt.Sprintf("%s:%d:%s", typ, ds.Year, f.desc), typ: typ, year: ds.Year, ds: ds, filter: f})
 	}
-	u := &scopeUnit{key: fmt.Sprintf("%s:%d:%s", typ, ds.Year, filter.desc), typ: typ, year: ds.Year, ds: ds, filter: filter}
-	var prevComplete int
-	_ = db.QueryRow(`SELECT complete FROM sync_scopes WHERE scope=?`, u.key).Scan(&prevComplete)
-	u.prevDone = prevComplete == 1
+	if scope.Empty() {
+		units = []*scopeUnit{{key: fmt.Sprintf("%s:%d:all", typ, ds.Year), typ: typ, year: ds.Year, ds: ds, filter: filterSpec{desc: "all"}}}
+	}
+	allPrev := true
+	for _, x := range units {
+		var prevComplete int
+		_ = db.QueryRow(`SELECT complete FROM sync_scopes WHERE scope=?`, x.key).Scan(&prevComplete)
+		x.prevDone = prevComplete == 1
+		allPrev = allPrev && x.prevDone
+	}
+	// Per-row change logging treats the load as a re-sync only when every
+	// covered scope was complete before.
+	u := &scopeUnit{key: units[0].key, typ: typ, year: ds.Year, ds: ds, prevDone: allPrev}
 	part := &partition{scope: u, label: u.key}
 	w := newWriter(db, run)
 	batch := make([]map[string]any, 0, 2000)
@@ -136,16 +150,26 @@ func BulkSync(ctx context.Context, db *sql.DB, ds Dataset, typ string, scope Sco
 		complete = 0
 	}
 	deleted := 0
-	if complete == 1 && filter.where != "" {
-		if deleted, err = w.reconcileDeletes(u); err != nil {
+	var reports []ScopeReport
+	for _, x := range units {
+		if complete == 1 && x.filter.where != "" {
+			n, err := w.reconcileDeletes(x)
+			if err != nil {
+				return nil, err
+			}
+			deleted += n
+		}
+		rows := part.rows
+		if x.filter.where != "" {
+			_ = db.QueryRow(fmt.Sprintf(`SELECT COUNT(*) FROM %s WHERE program_year = ? AND sync_run = ? AND %s`, TableFor(typ), x.filter.where), append([]any{ds.Year, run}, x.filter.args...)...).Scan(&rows)
+		}
+		if _, err := db.Exec(`INSERT INTO sync_scopes (scope, payment_type, program_year, dataset_id, dataset_modified, filter, rows, sync_run, last_run, complete)
+			VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(scope) DO UPDATE SET dataset_id=excluded.dataset_id, dataset_modified=excluded.dataset_modified,
+			rows=excluded.rows, sync_run=excluded.sync_run, last_run=excluded.last_run, complete=excluded.complete`,
+			x.key, typ, ds.Year, ds.DatasetID, ds.Modified, x.filter.desc+";bulk", rows, run, time.Now().UTC().Format(time.RFC3339), complete); err != nil {
 			return nil, err
 		}
-	}
-	if _, err := db.Exec(`INSERT INTO sync_scopes (scope, payment_type, program_year, dataset_id, dataset_modified, filter, rows, sync_run, last_run, complete)
-		VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(scope) DO UPDATE SET dataset_id=excluded.dataset_id, dataset_modified=excluded.dataset_modified,
-		rows=excluded.rows, sync_run=excluded.sync_run, last_run=excluded.last_run, complete=excluded.complete`,
-		u.key, typ, ds.Year, ds.DatasetID, ds.Modified, filter.desc+";bulk", part.rows, run, time.Now().UTC().Format(time.RFC3339), complete); err != nil {
-		return nil, err
+		reports = append(reports, ScopeReport{Scope: x.key, Type: typ, Year: ds.Year, Filter: x.filter.desc + " (bulk csv)", Modified: ds.Modified, Rows: rows, Status: "synced"})
 	}
 	if err := RebuildDerived(db); err != nil {
 		return nil, err
@@ -154,7 +178,7 @@ func BulkSync(ctx context.Context, db *sql.DB, ds Dataset, typ string, scope Sco
 		time.Now().UTC().Format(time.RFC3339), w.seen, w.added, w.amended, deleted, run)
 	return &SyncReport{
 		SyncRun: run, RowsSeen: w.seen, Added: w.added, Amended: w.amended, Deleted: deleted, Partitions: 1,
-		Scopes:  []ScopeReport{{Scope: u.key, Type: typ, Year: ds.Year, Filter: filter.desc + " (bulk csv)", Modified: ds.Modified, Rows: part.rows, Status: "synced"}},
+		Scopes:  reports,
 		Elapsed: time.Since(start).Round(time.Millisecond).String(),
 	}, nil
 }

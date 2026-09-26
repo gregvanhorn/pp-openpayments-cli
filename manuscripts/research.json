@@ -6,33 +6,198 @@
       "name": "mcp-cms-open-payments (Pipeworx)",
       "url": "https://github.com/pipeworx-io/mcp-cms-open-payments",
       "language": "TypeScript",
+      "install_method": "",
       "stars": 0,
-      "command_count": 10
+      "last_updated": "",
+      "command_count": 10,
+      "has_json_output": false,
+      "has_auth_support": false
     },
     {
       "name": "openpayments-mcp-server",
       "url": "https://github.com/QuentinCody/openpayments-mcp-server",
       "language": "TypeScript",
+      "install_method": "",
       "stars": 1,
-      "command_count": 6
+      "last_updated": "",
+      "command_count": 6,
+      "has_json_output": false,
+      "has_auth_support": false
     },
     {
       "name": "mcp-open-payments",
       "url": "https://github.com/alexandriashai/mcp-open-payments",
       "language": "Python",
+      "install_method": "",
       "stars": 1,
-      "command_count": 0
+      "last_updated": "",
+      "command_count": 0,
+      "has_json_output": false,
+      "has_auth_support": false
     },
     {
       "name": "mcp-sam-gov",
       "url": "https://github.com/cliwant/mcp-sam-gov",
       "language": "TypeScript",
+      "install_method": "",
       "stars": 10,
-      "command_count": 2
+      "last_updated": "",
+      "command_count": 2,
+      "has_json_output": false,
+      "has_auth_support": false
     }
   ],
-  "auth": {},
+  "gaps": [],
+  "patterns": [],
+  "recommendation": "proceed",
+  "researched_at": "2026-09-26T15:26:39Z",
   "novel_features": [
+    {
+      "name": "KOL ranking",
+      "command": "kol",
+      "description": "Rank physicians in a specialty and region by speaking and consulting dollars, number of paying companies and years active.",
+      "rationale": "Needs nature-filtered sums and distinct-company/year counts across every synced year, which the 500-row live API cannot aggregate.",
+      "example": "openpayments-pp-cli kol --specialty \"Physical Medicine\" --state PA --agent",
+      "why_it_matters": "Reach for this when asked who the key opinion leaders are in a specialty or territory.",
+      "group": "Relationship intelligence"
+    },
+    {
+      "name": "New recipients",
+      "command": "new-recipients",
+      "description": "See which clinicians received industry payments this year for the first time, compared against every earlier synced year.",
+      "rationale": "Set difference across yearly partitions held in the local store.",
+      "example": "openpayments-pp-cli new-recipients --year 2025 --state PA --agent",
+      "why_it_matters": "Use when asked who is new to industry payments or which new relationships a company started.",
+      "group": "Relationship intelligence"
+    },
+    {
+      "name": "Rising relationships",
+      "command": "rising",
+      "description": "Find recipient-company pairs whose dollars grew the most year over year.",
+      "rationale": "Exact YoY joins across full years; competing tools only sample cross-year totals.",
+      "example": "openpayments-pp-cli rising --state PA --year 2025 --limit 20 --agent",
+      "why_it_matters": "Use for 'which relationships are growing' questions.",
+      "group": "Relationship intelligence"
+    },
+    {
+      "name": "Research-site scouting",
+      "command": "research-sites",
+      "description": "Rank sites and principal investigators by research dollars, trials and sponsors for a specialty and region.",
+      "rationale": "Joins research payments, flattened PI 1-5 slots and teaching hospitals locally.",
+      "example": "openpayments-pp-cli research-sites --specialty \"Pain Medicine\" --state PA,NJ --agent",
+      "why_it_matters": "Use when scouting proven trial sites or PIs in a region.",
+      "group": "Trial-site intelligence"
+    },
+    {
+      "name": "Trial gaps",
+      "command": "trials gaps",
+      "description": "List recruiting trials in your region whose sponsor pays no local principal investigator. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct).",
+      "rationale": "Joins ClinicalTrials.gov recruiting locations with Open Payments research PIs; no single source has both.",
+      "example": "openpayments-pp-cli trials gaps --condition \"low back pain\" --state PA,NJ --agent",
+      "why_it_matters": "Use when looking for trials that still need local sites.",
+      "group": "Trial-site intelligence"
+    },
+    {
+      "name": "Recipient compare",
+      "command": "compare",
+      "description": "Put two or more clinicians side by side by year, company and nature of payment.",
+      "rationale": "Pivots local payment rows per NPI.",
+      "example": "openpayments-pp-cli compare 1234567890 1987654321 --agent",
+      "why_it_matters": "Use for side-by-side COI or KOL comparisons.",
+      "group": "Relationship intelligence"
+    },
+    {
+      "name": "Relationship timeline",
+      "command": "relationships",
+      "description": "Show every company that paid a clinician with first year, last year, total and trend.",
+      "rationale": "Per-company tenure needs every synced year at once.",
+      "example": "openpayments-pp-cli relationships 1234567890 --agent",
+      "why_it_matters": "Use for how one clinician's industry relationships evolved.",
+      "group": "Relationship intelligence"
+    },
+    {
+      "name": "Trial investigators",
+      "command": "investigators",
+      "description": "List every principal investigator paid for one ClinicalTrials.gov study, deduplicated.",
+      "rationale": "Flattens the five PI slots on every research payment into one row per PI.",
+      "example": "openpayments-pp-cli investigators --nct NCT04280705 --agent",
+      "why_it_matters": "Use when asked who was paid as PI on a specific trial.",
+      "group": "Trial-site intelligence"
+    },
+    {
+      "name": "Company overlap",
+      "command": "overlap",
+      "description": "See which recipients two companies both pay, and who only one pays.",
+      "rationale": "Set intersection over locally synced recipients.",
+      "example": "openpayments-pp-cli overlap \"Stryker Corporation\" \"Zimmer Biomet\" --state PA --agent",
+      "why_it_matters": "Use for competitive mapping between two manufacturers.",
+      "group": "Relationship intelligence"
+    },
+    {
+      "name": "Batch roster check",
+      "command": "roster",
+      "description": "Summarize payments for a whole list of NPIs in one pass, including disputed counts.",
+      "rationale": "Batch resolution plus aggregates from the local store.",
+      "example": "openpayments-pp-cli roster --npi 1234567890,1987654321 --agent",
+      "why_it_matters": "Use for conflict-of-interest reviews of many clinicians.",
+      "group": "Relationship intelligence"
+    },
+    {
+      "name": "Agent question helper",
+      "command": "ask",
+      "description": "Print the local schema, a plain-word glossary and worked SQL examples for any question.",
+      "rationale": "Introspects the local SQLite store; no LLM embedded.",
+      "example": "openpayments-pp-cli ask \"top companies paying PA pain doctors\"",
+      "why_it_matters": "Use when no dedicated command fits and you need to write SQL.",
+      "group": "Agent plumbing"
+    },
+    {
+      "name": "Spend concentration",
+      "command": "concentration",
+      "description": "Measure how concentrated a company's spend is: top-10 share, HHI and recipients to reach 50% and 80%.",
+      "rationale": "Arithmetic over a company's full local spend distribution.",
+      "example": "openpayments-pp-cli concentration \"Stryker Corporation\" --year 2024 --agent",
+      "why_it_matters": "Use for questions about how concentrated a company's payments are.",
+      "group": "Relationship intelligence"
+    },
+    {
+      "name": "Radius search",
+      "command": "near",
+      "description": "Find paid clinicians within N miles of a ZIP code (ZIP-centroid distance).",
+      "rationale": "Haversine over a bundled ZIP centroid table.",
+      "example": "openpayments-pp-cli near --zip 19002 --miles 25 --type research --agent",
+      "why_it_matters": "Use for geographic questions around a ZIP.",
+      "group": "Trial-site intelligence"
+    },
+    {
+      "name": "Change detection",
+      "command": "changed",
+      "description": "See records added, corrected or removed by the latest re-sync (needs at least two syncs of the same scope).",
+      "rationale": "Diffs each sync against the local store and CMS change_type.",
+      "example": "openpayments-pp-cli changed --since-last-sync --agent",
+      "why_it_matters": "Use after a CMS refresh to see what moved.",
+      "group": "Relationship intelligence"
+    },
+    {
+      "name": "Cooling relationships",
+      "command": "cooling",
+      "description": "Find recipient-company pairs whose dollars fell or stopped year over year.",
+      "rationale": "Same exact YoY join as rising, sorted the other way.",
+      "example": "openpayments-pp-cli cooling --state PA --year 2025 --agent",
+      "why_it_matters": "Use for 'which relationships are cooling' questions.",
+      "group": "Relationship intelligence"
+    },
+    {
+      "name": "Sponsor trial map",
+      "command": "trials sponsor",
+      "description": "Show a sponsor's ClinicalTrials.gov trials with the sites it already pays. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct).",
+      "rationale": "Joins ClinicalTrials.gov lead-sponsor trials to local research payments by NCT.",
+      "example": "openpayments-pp-cli trials sponsor \"Medtronic\" --agent",
+      "why_it_matters": "Use for one sponsor's trial portfolio.",
+      "group": "Trial-site intelligence"
+    }
+  ],
+  "novel_features_built": [
     {
       "name": "KOL ranking",
       "command": "kol",
@@ -178,10 +343,11 @@
       "group": "Trial-site intelligence"
     }
   ],
+  "auth": {},
   "narrative": {
     "display_name": "CMS Open Payments",
-    "headline": "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps no other tool computes.",
-    "value_prop": "Sync the payments you care about (by state, specialty, NPI or company) into typed SQLite and answer dossier, leaderboard and year-over-year questions in under two seconds. Commands like kol, rising, research-sites and trials gaps join General, Research and Ownership data with ClinicalTrials.gov locally, with provenance on every row.",
+    "headline": "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data.",
+    "value_prop": "Sync the payments you care about (by state, specialty, NPI or company) into typed SQLite and answer dossier, leaderboard and year-over-year questions locally. Commands like kol, rising, research-sites and trials gaps join General, Research and Ownership data with ClinicalTrials.gov, with provenance on every row.",
     "auth_narrative": "No API key or account is needed. CMS Open Payments and ClinicalTrials.gov are public, unauthenticated APIs. The CLI paces itself (4 requests per second, 4 workers by default) to stay polite to CMS.",
     "quickstart": [
       {
@@ -221,6 +387,14 @@
       {
         "symptom": "Dataset ID not found after a CMS refresh",
         "fix": "Run openpayments-pp-cli datasets resolve --refresh; IDs change every June and January"
+      },
+      {
+        "symptom": "dossier/relationships says 'no match' for an NPI",
+        "fix": "The NPI is outside the synced scope; run openpayments-pp-cli sync --years 2019-2025 --npi <NPI>"
+      },
+      {
+        "symptom": "trials gaps marks a trial as a gap you know is covered",
+        "fix": "Sponsor names are matched to CMS manufacturer names by normalized text; pass --sponsor-alias \"CT sponsor=CMS name\" and sync the region's research payments"
       }
     ],
     "when_to_use": "Use this CLI to answer factual questions about industry payments to US physicians, non-physician practitioners and teaching hospitals from CMS Open Payments (2019-2025): dossiers, company footprints, leaderboards, year-over-year relationship changes, research payments by trial, and trial-site gaps joined with ClinicalTrials.gov.",
@@ -232,14 +406,19 @@
     ],
     "recipes": [
       {
+        "title": "Sync a scope",
+        "command": "openpayments-pp-cli sync --years 2019-2025 --npi 1234567890",
+        "explanation": "Every local command reads synced data; scope by --states, --specialty, --npi or --company (or --full --bulk --year 2024 --type research for a bulk CSV)."
+      },
+      {
         "title": "Top PA recipients",
         "command": "openpayments-pp-cli top --by recipient --state PA --year 2024 --limit 20 --agent --select name,npi,total",
         "explanation": "Top 20 PA recipients by total general payments, narrowed to three fields."
       },
       {
-        "title": "Doctor dossier",
+        "title": "Clinician dossier",
         "command": "openpayments-pp-cli dossier 1234567890 --agent",
-        "explanation": "Every payment for one NPI by year, company, nature and product, with dispute status."
+        "explanation": "Totals by year, company, nature and product with disputed-payment counts for one NPI; add --payments N for individual rows."
       },
       {
         "title": "PIs on one trial",
@@ -263,12 +442,11 @@
       "open payments for NPI",
       "sunshine act payments",
       "which PIs were paid for this trial",
+      "key opinion leaders in pain medicine",
+      "new or rising industry payment relationships",
+      "recruiting trials that need local sites",
       "use openpayments",
       "run openpayments-pp-cli"
     ]
-  },
-  "gaps": [],
-  "patterns": [],
-  "recommendation": "proceed",
-  "researched_at": "2026-09-26T15:26:39Z"
+  }
 }

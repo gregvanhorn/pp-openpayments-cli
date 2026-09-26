@@ -1,0 +1,106 @@
+{
+  "dir": "\u003ccli-dir\u003e/openpayments-pp-cli",
+  "spec_path": "\u003ccli-dir\u003e/spec.json",
+  "spec_source": "bundled",
+  "verdict": "WARN",
+  "path_check": {
+    "tested": 2,
+    "valid": 2,
+    "valid_pct": 100
+  },
+  "auth_check": {
+    "spec_scheme": "",
+    "generated_format": "unknown",
+    "match": true,
+    "detail": "no bot/bearer/basic scheme detected"
+  },
+  "browser_session_check": {
+    "required": false,
+    "pass": true,
+    "detail": "browser-session auth not required"
+  },
+  "oauth_scope_coverage_check": {
+    "checked": 0,
+    "covered": 0,
+    "skipped": true,
+    "detail": "no OAuth-scoped endpoints in spec"
+  },
+  "dead_flags": {
+    "total": 24,
+    "dead": 0
+  },
+  "dead_functions": {
+    "total": 113,
+    "dead": 3,
+    "items": [
+      "handleBinaryResponseDelivery",
+      "readSecretFromStdin",
+      "successfulNoop"
+    ]
+  },
+  "pipeline_check": {
+    "sync_calls_domain": true,
+    "search_calls_domain": false,
+    "domain_tables": 4,
+    "sync_file_emitted": true,
+    "sync_resources_present": true,
+    "detail": "sync uses domain-specific Upsert methods; search uses generic Search only; 4 domain tables found"
+  },
+  "example_check": {
+    "tested": 10,
+    "with_examples": 10,
+    "valid_examples": 10,
+    "detail": "10/10 commands have examples"
+  },
+  "wiring_check": {
+    "command_tree": {
+      "defined": 93,
+      "registered": 93
+    },
+    "config_consistency": {
+      "consistent": true
+    },
+    "workflow_completeness": {
+      "skipped": true,
+      "total_steps": 0,
+      "mapped_steps": 0,
+      "detail": "no workflow_verify.yaml found"
+    }
+  },
+  "novel_features_check": {
+    "planned": 16,
+    "found": 16
+  },
+  "mcp_surface_parity": {
+    "state": "runtime_walking",
+    "pass": true,
+    "detail": "MCP surface mirrors the Cobra tree at runtime"
+  },
+  "reimplementation_check": {
+    "checked": 16,
+    "exempted_via_store": 15,
+    "exempted_via_computed_data_source": 1
+  },
+  "description_drift_check": {
+    "expected": "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data."
+  },
+  "source_client_check": {
+    "checked": 19
+  },
+  "print_json_filtered_check": {
+    "checked": 64
+  },
+  "test_presence": {
+    "checked": 3
+  },
+  "naming_check": {
+    "checked": 64
+  },
+  "sync_param_drop_check": {
+    "checked": 0,
+    "skipped": true
+  },
+  "issues": [
+    "3 dead helper functions found"
+  ]
+}

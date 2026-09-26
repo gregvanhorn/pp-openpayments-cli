@@ -39,7 +39,7 @@ func openOPStore(ctx context.Context) (*store.Store, *sql.DB, error) {
 func openOPStoreRead(ctx context.Context) (*store.Store, *sql.DB, error) {
 	path := defaultDBPath(opCLIName)
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		return nil, nil, notFoundErr(fmt.Errorf("no local data yet; run '%s sync --years 2024 --states PA' first", opCLIName))
+		return nil, nil, notFoundErr(fmt.Errorf("local store not synced (%v); run '%s sync --years 2024 --states PA' first", err, opCLIName))
 	}
 	// Read-write open so schema creation is idempotent on older stores; the
 	// commands themselves only issue SELECTs.

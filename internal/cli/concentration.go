@@ -1,4 +1,4 @@
-// Copyright 2026 Claude and contributors. Licensed under Apache-2.0. See LICENSE.
+// Copyright 2026 Greg Van Horn and contributors. Licensed under Apache-2.0. See LICENSE.
 // pp:data-source local
 
 package cli
@@ -67,7 +67,7 @@ use it to list who a company pays; use 'company' instead.`,
 				total += toFloat(r["total"])
 			}
 			if total <= 0 {
-				return notFoundErr(fmt.Errorf("no synced payments for %q in this scope", f.companies))
+				return notFoundErr(fmt.Errorf("no match for %q in synced payments (check the name or sync that company's scope)", f.companies))
 			}
 			var hhi, cum, top10 float64
 			n50, n80 := 0, 0

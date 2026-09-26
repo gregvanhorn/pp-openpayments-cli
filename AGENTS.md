@@ -11,27 +11,22 @@ openpayments-pp-cli doctor --json
 openpayments-pp-cli agent-context --pretty
 ```
 
+This CLI is read-only against CMS Open Payments and ClinicalTrials.gov and needs no credentials; it writes only to its own local store.
+
 Use runtime discovery instead of relying on a copied command list:
 
 ```bash
-openpayments-pp-cli which "<capability>" --json
-openpayments-pp-cli <command> --help
+openpayments-pp-cli which "rank key opinion leaders" --json
+openpayments-pp-cli kol --help
 ```
 
 Add `--agent` to command invocations for JSON, compact output, non-interactive defaults, and no color:
 
 ```bash
-openpayments-pp-cli <command> --agent
+openpayments-pp-cli top --by recipient --state PA --year 2024 --agent
 ```
 
-Before running an unfamiliar command that may mutate remote state, inspect its help and prefer a dry run:
-
-```bash
-openpayments-pp-cli <command> --help
-openpayments-pp-cli <command> --dry-run --agent
-```
-
-When a command requires confirmation, pass `--yes` explicitly only after the target, arguments, and side effects are clear. `--agent` does not imply `--yes`.
+Local commands read synced data; sync a scope first (`openpayments-pp-cli sync --years 2024 --states PA`). `--yes` only affects local actions such as `profile delete`.
 
 ## Novel Command Data Sources
 
@@ -63,21 +58,11 @@ The store's schema stamp is one-way: once this binary opens the database, an old
 
 Disable the loop with `--no-learn` per-invocation or `OPENPAYMENTS_NO_LEARN=true` for the whole session - useful for deterministic agent flows that don't want a learning row to silently change subsequent query results.
 
-## Platform Credential References
+## Credentials
 
-Normal API authentication is separate from optional platform-source credential
-resolution. If this CLI uses indirect references for a tenant-gated platform
-source, add the downstream registration in a preserved hand-authored file
-under `internal/cli/` and provide both `CredentialResolverFactory` and
-`ValidateSourceProfile` on `platformSourceRegistration` for any selected source
-that has references. A source with no references may omit both hooks and receives
-an empty credential map. Keep reference values opaque to shared profile code,
-validate only the selected source in the downstream hook, and never persist
-resolved credential bytes. Do not edit generator-owned `internal/platform`
-packages; a reprint refreshes those files while retaining the downstream
-registration file.
+None. CMS Open Payments and ClinicalTrials.gov are public, unauthenticated APIs; no credential references are used.
 
-For install, auth, examples, and longer product guidance, read `README.md` and `SKILL.md`. This file intentionally stays small so repo-local agents get invariant local guidance without duplicating the generated docs.
+For install, examples, and longer product guidance, read `README.md` and `SKILL.md`. This file intentionally stays small so repo-local agents get invariant local guidance without duplicating the generated docs.
 
 ## Release Ledger
 

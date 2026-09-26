@@ -1,7 +1,7 @@
 {
   "api_name": "openpayments",
   "base_url": "https://openpaymentsdata.cms.gov",
-  "description": "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps no other tool computes.",
+  "description": "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data.",
   "mcp_ready": "full",
   "http_transport": "standard",
   "auth": {

@@ -1,12 +1,12 @@
 # CMS Open Payments CLI
 
-**A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps no other tool computes.**
+**A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data.**
 
-Sync the payments you care about (by state, specialty, NPI or company) into typed SQLite and answer dossier, leaderboard and year-over-year questions in under two seconds. Commands like kol, rising, research-sites and trials gaps join General, Research and Ownership data with ClinicalTrials.gov locally, with provenance on every row.
+Sync the payments you care about (by state, specialty, NPI or company) into typed SQLite and answer dossier, leaderboard and year-over-year questions locally. Commands like kol, rising, research-sites and trials gaps join General, Research and Ownership data with ClinicalTrials.gov, with provenance on every row.
 
 Learn more at [CMS Open Payments](https://openpaymentsdata.cms.gov).
 
-Created by [@gregvanhorn](https://github.com/gregvanhorn) (Claude).
+Created by [@gregvanhorn](https://github.com/gregvanhorn) (Greg Van Horn).
 
 ## Install
 
@@ -128,18 +128,14 @@ No API key or account is needed. CMS Open Payments and ClinicalTrials.gov are pu
 # Confirm the CLI is installed; no network needed
 openpayments-pp-cli doctor --dry-run
 
-
 # See the current dataset IDs CMS publishes for a program year
 openpayments-pp-cli datasets list --year 2024
-
 
 # Pull a scoped slice into the local store (the plan's seed)
 openpayments-pp-cli sync --years 2023-2025 --types general,research,ownership --states PA,NJ
 
-
 # First leaderboard from local data
 openpayments-pp-cli top --by recipient --state PA --year 2024 --limit 20
-
 
 # Rank key opinion leaders by speaking and consulting dollars
 openpayments-pp-cli kol --specialty "Physical Medicine" --state PA
@@ -148,10 +144,9 @@ openpayments-pp-cli kol --specialty "Physical Medicine" --state PA
 
 ## Unique Features
 
-These capabilities aren't available in any other tool for this API.
+These are computed locally from the synced Open Payments store (and ClinicalTrials.gov for trials commands).
 
 ### Relationship intelligence
-
 - **`kol`** — Rank physicians in a specialty and region by speaking and consulting dollars, number of paying companies and years active.
 
   _Reach for this when asked who the key opinion leaders are in a specialty or territory._
@@ -224,7 +219,6 @@ These capabilities aren't available in any other tool for this API.
   ```
 
 ### Trial-site intelligence
-
 - **`research-sites`** — Rank sites and principal investigators by research dollars, trials and sponsors for a specialty and region.
 
   _Use when scouting proven trial sites or PIs in a region._
@@ -262,7 +256,6 @@ These capabilities aren't available in any other tool for this API.
   ```
 
 ### Agent plumbing
-
 - **`ask`** — Print the local schema, a plain-word glossary and worked SQL examples for any question.
 
   _Use when no dedicated command fits and you need to write SQL._
@@ -273,7 +266,6 @@ These capabilities aren't available in any other tool for this API.
 
 ## Recipes
 
-
 ### Top PA recipients
 
 ```bash
@@ -282,7 +274,7 @@ openpayments-pp-cli top --by recipient --state PA --year 2024 --limit 20 --agent
 
 Top 20 PA recipients by total general payments, narrowed to three fields.
 
-### Doctor dossier
+### Clinician dossier
 
 ```bash
 openpayments-pp-cli dossier 1234567890 --agent
@@ -326,7 +318,7 @@ This CLI separates local files into four path kinds:
 |------|----------|
 | `config` | User-editable settings such as `config.toml` and saved profiles |
 | `data` | Durable local data such as `data.db` |
-| `state` | Runtime state such as persisted queries, jobs, and `teach.log` |
+| `state` | Runtime state such as persisted queries and `teach.log` |
 | `cache` | Regenerable HTTP/cache files |
 
 Each kind resolves independently. The ladder is:
@@ -453,23 +445,20 @@ Verifies configuration and connectivity to the API.
 
 ## Configuration
 
-Run `openpayments-pp-cli doctor` to see the resolved config, data, state, and cache directories. The platform-default config path is `~/.config/cms-open-payments-pp-cli/config.toml`; `--home`, `OPENPAYMENTS_HOME`, and per-kind env vars can relocate it.
+Run `openpayments-pp-cli doctor` to see the resolved config, data, state, and cache directories. The platform-default config path is `~/.config/openpayments-pp-cli/config.toml`; `--home`, `OPENPAYMENTS_HOME`, and per-kind env vars can relocate it.
 
 Static request headers can be configured under `headers`; per-command header overrides take precedence.
 
 ## Troubleshooting
 **Not found errors (exit code 3)**
-- Check the resource ID is correct
-- Run the `list` command to see available items
+- The NPI, company or NCT ID is outside your synced scope: sync it (`openpayments-pp-cli sync --years 2019-2025 --npi <NPI>`)
+- Check an NCT ID's format (NCT followed by 8 digits) and run `openpayments-pp-cli datasets list` to see published years
 
 ### API-specific
-
 - **A live query fails with 'JSON Schema validation failed'** — The DKAN API caps pages at 500 rows; use --limit 500 or less (the CLI paginates for you)
 - **Local commands return nothing** — Run sync for the scope first, e.g. openpayments-pp-cli sync --years 2024 --states PA
 - **Name or company filter is slow on live data** — Live wildcard filters take ~30 s on 15M-row years; sync the scope and query locally instead
 - **Dataset ID not found after a CMS refresh** — Run openpayments-pp-cli datasets resolve --refresh; IDs change every June and January
-
----
 
 ## Sources & Inspiration
 

@@ -49,7 +49,7 @@ brews:
       owner: gregvanhorn
       name: homebrew-tap
     homepage: "https://github.com/gregvanhorn/openpayments-pp-cli"
-    description: "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps no other tool computes."
+    description: "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data."
     install: |
       bin.install "openpayments-pp-cli"
       bin.install "openpayments-pp-mcp"
