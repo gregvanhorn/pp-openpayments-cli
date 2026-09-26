@@ -1,0 +1,27 @@
+{
+  "manifest_version": "0.3",
+  "name": "openpayments-pp-mcp",
+  "display_name": "CMS Open Payments",
+  "version": "4.32.5",
+  "description": "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps no other tool computes.",
+  "author": {
+    "name": "CLI Printing Press"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "binary",
+    "entry_point": "bin/openpayments-pp-mcp",
+    "mcp_config": {
+      "command": "${__dirname}/bin/openpayments-pp-mcp",
+      "args": []
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=1.0.0",
+    "platforms": [
+      "darwin",
+      "linux",
+      "win32"
+    ]
+  }
+}
