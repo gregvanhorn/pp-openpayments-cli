@@ -1,37 +1,34 @@
 // Copyright 2026 Claude and contributors. Licensed under Apache-2.0. See LICENSE.
-// Novel command scaffold. Implement the RunE body before shipping.
-// generate --force preserves implemented bodies; untouched TODO scaffolds may refresh.
-// pp:data-source auto
-// Supported strategies: auto, local, live, or computed. Change this default deliberately.
+// pp:data-source local
 
 package cli
 
-import (
-	"fmt"
-
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
 func newNovelRisingCmd(flags *rootFlags) *cobra.Command {
-	var flagState string
-	var flagYear string
-	var flagLimit string
-
+	var f opFilter
+	var includeNew bool
+	var minDelta float64
 	cmd := &cobra.Command{
-		Use:         "rising",
-		Short:       "Find recipient-company pairs whose dollars grew the most year over year.",
+		Use:   "rising",
+		Short: "Find recipient-company pairs whose dollars grew the most year over year",
+		Long: `Ranks recipient × company pairs by dollar increase from the prior program
+year to --year (default: latest synced year). Exact sums from the local store.
+
+Use this command for relationships whose dollars grew year over year. Do NOT
+use it for brand-new relationships; use 'new-recipients' instead. Do NOT use
+it for declines; use 'cooling' instead.`,
 		Example:     "  openpayments-pp-cli rising --state PA --year 2025 --limit 20 --agent",
-		Annotations: map[string]string{"mcp:read-only": "false", "pp:data-source": "auto", "pp:novel-scaffold": "true"},
+		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "local"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if dryRunOK(flags) {
 				return writeDryRun(cmd.OutOrStdout(), flags, "rising")
 			}
-			// validate required flags here
-			return fmt.Errorf("TODO: implement novel feature %q", "rising")
+			return runYoY(cmd, flags, f, 1, includeNew, minDelta)
 		},
 	}
-	cmd.Flags().StringVar(&flagState, "state", "", "TODO: describe --state")
-	cmd.Flags().StringVar(&flagYear, "year", "", "TODO: describe --year")
-	cmd.Flags().StringVar(&flagLimit, "limit", "", "TODO: describe --limit")
+	addFilterFlags(cmd, &f, 20)
+	cmd.Flags().BoolVar(&includeNew, "include-new", false, "Also rank pairs with no prior-year payments")
+	cmd.Flags().Float64Var(&minDelta, "min-delta", 0, "Only pairs that grew by at least this many USD")
 	return cmd
 }

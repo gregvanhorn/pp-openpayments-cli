@@ -11,6 +11,7 @@ import (
 
 	"openpayments-pp-cli/internal/cliutil"
 	"openpayments-pp-cli/internal/op"
+	"openpayments-pp-cli/internal/store"
 )
 
 // Open Payments scoped sync. The framework sync command walks generic list
@@ -88,7 +89,7 @@ Scopes whose CMS dataset 'modified' date is unchanged are skipped; pass
 			}
 			ctx, cancel := boundSyncCtx(cmd, flags)
 			defer cancel()
-			_, db, err := openOPStore(ctx)
+			st, db, err := openOPStore(ctx)
 			if err != nil {
 				return err
 			}
@@ -128,6 +129,7 @@ Scopes whose CMS dataset 'modified' date is unchanged are skipped; pass
 			if err != nil {
 				return apiErr(err)
 			}
+			recordFrameworkSyncState(st, report)
 			if err := flags.printJSON(cmd, report); err != nil {
 				return err
 			}
@@ -148,4 +150,21 @@ func boundSyncCtx(cmd *cobra.Command, flags *rootFlags) (context.Context, contex
 		return boundCtx(cmd.Context(), flags)
 	}
 	return context.WithTimeout(cmd.Context(), 12*time.Hour)
+}
+
+// recordFrameworkSyncState mirrors domain syncs into the framework sync_state
+// table so generated stale/unsynced hints work for local commands.
+func recordFrameworkSyncState(st *store.Store, report *op.SyncReport) {
+	if st == nil || report == nil {
+		return
+	}
+	counts := map[string]int{}
+	for _, s := range report.Scopes {
+		if s.Status == "synced" || s.Status == "unchanged" {
+			counts["payments_"+s.Type] += s.Rows
+		}
+	}
+	for res, n := range counts {
+		_ = st.SaveSyncState(res, "", n)
+	}
 }

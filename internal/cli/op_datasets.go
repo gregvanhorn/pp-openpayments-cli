@@ -226,7 +226,7 @@ func runBulkSync(cmd *cobra.Command, flags *rootFlags, scope op.Scope) error {
 	}
 	ctx, cancel := boundSyncCtx(cmd, flags)
 	defer cancel()
-	_, db, err := openOPStore(ctx)
+	st, db, err := openOPStore(ctx)
 	if err != nil {
 		return err
 	}
@@ -242,5 +242,6 @@ func runBulkSync(cmd *cobra.Command, flags *rootFlags, scope op.Scope) error {
 	if err != nil {
 		return apiErr(err)
 	}
+	recordFrameworkSyncState(st, report)
 	return flags.printJSON(cmd, report)
 }

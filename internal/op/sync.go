@@ -656,9 +656,9 @@ func (w *writer) reconcileDeletes(u *scopeUnit) (int, error) {
 		return 0, err
 	}
 	type gone struct {
-		id                   string
-		amt                  sql.NullFloat64
-		npi, name, company   sql.NullString
+		id                 string
+		amt                sql.NullFloat64
+		npi, name, company sql.NullString
 	}
 	var dead []gone
 	for rows.Next() {

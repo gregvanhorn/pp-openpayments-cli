@@ -293,7 +293,7 @@ func productKeys() []string {
 
 // Investigator is one PI slot on a research payment.
 type Investigator struct {
-	Slot                                                                   int
+	Slot                                                                                        int
 	NPI, ProfileID, First, Last, Name, Type, City, State, Zip5, Country, PrimaryType, Specialty string
 }
 

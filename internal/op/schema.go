@@ -139,7 +139,7 @@ var TableDescriptions = map[string]string{
 	"teaching_hospitals":     "Teaching hospitals seen in synced payments, keyed by CCN.",
 	"reporting_entities":     "Manufacturers and GPOs making payments, keyed by company_id.",
 	"dataset_registry":       "CMS dataset IDs per program year and type (dataset_id for query, distribution_id for SQL).",
-	"sync_scopes":             "One row per synced scope (type x year x filter) with the dataset modified date it reflects.",
+	"sync_scopes":            "One row per synced scope (type x year x filter) with the dataset modified date it reflects.",
 	"sync_runs":              "History of sync runs with added/amended/deleted counts.",
 	"sync_changes":           "Per-record changes detected by each sync run (added, amended, deleted).",
 	"trials":                 "Cached ClinicalTrials.gov studies (status, phase, lead sponsor, conditions).",

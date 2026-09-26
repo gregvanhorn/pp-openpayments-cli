@@ -1,35 +1,32 @@
 // Copyright 2026 Claude and contributors. Licensed under Apache-2.0. See LICENSE.
-// Novel command scaffold. Implement the RunE body before shipping.
-// generate --force preserves implemented bodies; untouched TODO scaffolds may refresh.
-// pp:data-source auto
-// Supported strategies: auto, local, live, or computed. Change this default deliberately.
+// pp:data-source local
 
 package cli
 
-import (
-	"fmt"
-
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
 func newNovelCoolingCmd(flags *rootFlags) *cobra.Command {
-	var flagState string
-	var flagYear string
-
+	var f opFilter
+	var minDelta float64
 	cmd := &cobra.Command{
-		Use:         "cooling",
-		Short:       "Find recipient-company pairs whose dollars fell or stopped year over year.",
+		Use:   "cooling",
+		Short: "Find recipient-company pairs whose dollars fell or stopped year over year",
+		Long: `Ranks recipient × company pairs by dollar decline from the prior program year
+to --year (default: latest synced year), including pairs that dropped to $0
+(status 'stopped').
+
+Use this command for relationships whose dollars fell or stopped. Do NOT use
+it for growth; use 'rising' instead.`,
 		Example:     "  openpayments-pp-cli cooling --state PA --year 2025 --agent",
-		Annotations: map[string]string{"mcp:read-only": "false", "pp:data-source": "auto", "pp:novel-scaffold": "true"},
+		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "local"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if dryRunOK(flags) {
 				return writeDryRun(cmd.OutOrStdout(), flags, "cooling")
 			}
-			// validate required flags here
-			return fmt.Errorf("TODO: implement novel feature %q", "cooling")
+			return runYoY(cmd, flags, f, -1, false, minDelta)
 		},
 	}
-	cmd.Flags().StringVar(&flagState, "state", "", "TODO: describe --state")
-	cmd.Flags().StringVar(&flagYear, "year", "", "TODO: describe --year")
+	addFilterFlags(cmd, &f, 20)
+	cmd.Flags().Float64Var(&minDelta, "min-delta", 0, "Only pairs that fell by at least this many USD")
 	return cmd
 }
