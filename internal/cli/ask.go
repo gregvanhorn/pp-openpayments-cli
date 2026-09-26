@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 
@@ -58,6 +59,9 @@ examples to write SQL. Do NOT use it to run a query; use 'sql' instead.`,
 				ranked = append(ranked, scored{e, s})
 			}
 			sort.SliceStable(ranked, func(i, j int) bool { return ranked[i].Score > ranked[j].Score })
+			if len(ranked) == 0 || ranked[0].Score == 0 {
+				return notFoundErr(fmt.Errorf("no match for %q among worked examples; use Open Payments words (company, specialty, state, NPI, trial, research, top...) or run 'schema --json'", strings.Join(args, " ")))
+			}
 			if examples > 0 && len(ranked) > examples {
 				ranked = ranked[:examples]
 			}

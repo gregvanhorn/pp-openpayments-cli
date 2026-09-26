@@ -13,7 +13,7 @@ func newNovelChangedCmd(flags *rootFlags) *cobra.Command {
 	var limit int
 	cmd := &cobra.Command{
 		Use:   "changed",
-		Short: "Records added, corrected or removed since the previous sync",
+		Short: "List records added, corrected or removed since the previous sync",
 		Long: `Lists per-record changes the sync engine detected: 'added' (new record in a
 scope synced before), 'amended' (amount or dispute status changed) and
 'removed' (no longer returned in that scope: deleted by CMS or moved out of it). --since-last-sync shows the most

@@ -15,7 +15,7 @@ func newNovelConcentrationCmd(flags *rootFlags) *cobra.Command {
 	var by string
 	cmd := &cobra.Command{
 		Use:   "concentration <company>",
-		Short: "How concentrated a company's spend is: top-10 share, HHI and recipients to reach 50%/80%",
+		Short: "Measure how concentrated a company's spend is: top-10 share, HHI and recipients to reach 50%/80%",
 		Long: `Arithmetic over a company's synced general payments grouped by --by
 (recipient, state, specialty or product; a payment linked to several
 products is split evenly across them): total, number of groups, top-10

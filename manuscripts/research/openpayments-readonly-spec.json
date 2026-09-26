@@ -1486,7 +1486,8 @@
           }
         },
         "security": [],
-        "x-pp-resource": "datastore"
+        "x-pp-resource": "datastore",
+        "x-pp-example": "openpayments-pp-cli datastore sql --query '[SELECT record_id FROM 93b512a7-7f65-539b-9e20-bbcc535750bd][LIMIT 2]'"
       }
     },
     "/api/1/metastore/schemas": {

@@ -81,7 +81,8 @@ func runYoY(cmd *cobra.Command, flags *rootFlags, f opFilter, direction int, inc
 			return err
 		}
 		if n == 0 {
-			return notFoundErr(fmt.Errorf("no %d general payments synced for this scope; year-over-year needs %d and %d (e.g. sync --years %d-%d --states <ST>)", y, year-1, year, year-1, year))
+			fmt.Fprintf(cmd.ErrOrStderr(), "hint: no %d general payments synced for this scope; year-over-year needs %d and %d (e.g. sync --years %d-%d --states <ST>)\n", y, year-1, year, year-1, year)
+			return printRows(cmd, flags, nil)
 		}
 	}
 	return runLocal(ctx, cmd, flags, db, q, args...)

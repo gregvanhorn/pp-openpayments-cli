@@ -37,7 +37,7 @@ func newDossierCmd(flags *rootFlags) *cobra.Command {
 	var payments int
 	cmd := &cobra.Command{
 		Use:   "dossier <npi|name>",
-		Short: "Full payment dossier for one clinician: by year, company, nature and product",
+		Short: "Build a full payment dossier for one clinician: by year, company, nature and product",
 		Long: `Every synced payment for one recipient: totals by type, by year, by paying
 company, by nature of payment and by product, research studies with NCT IDs,
 ownership interests, and disputed-payment counts. Reports published facts only.
@@ -81,7 +81,7 @@ per-company tenure timeline; use 'relationships' instead.`,
 				{"by_year", `SELECT program_year, COUNT(*) payments, SUM(amount) total, COUNT(DISTINCT company) companies, MAX(dataset_modified) dataset_modified FROM payments_general p WHERE ` + w + ` GROUP BY program_year ORDER BY program_year`},
 				{"by_company", `SELECT company, COUNT(*) payments, SUM(amount) total, MIN(program_year) first_year, MAX(program_year) last_year FROM payments_general p WHERE ` + w + ` GROUP BY company ORDER BY total DESC LIMIT 25`},
 				{"by_nature", `SELECT nature, COUNT(*) payments, SUM(amount) total FROM payments_general p WHERE ` + w + ` GROUP BY nature ORDER BY total DESC`},
-				{"by_product", `SELECT MAX(name) product, MAX(kind) kind, MAX(category) category, COUNT(*) payments, SUM(amount) total FROM (SELECT DISTINCT p.record_id, p.program_year, p.amount, LOWER(pr.name) pkey, pr.name, pr.kind, pr.category FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` AND pr.name IS NOT NULL) GROUP BY pkey ORDER BY total DESC LIMIT 25`},
+				{"by_product", `SELECT MAX(name) product, MAX(kind) kind, MAX(category) category, COUNT(*) payments, SUM(amount) total FROM (SELECT p.record_id, p.program_year, MAX(p.amount) amount, LOWER(pr.name) pkey, MAX(pr.name) name, MAX(pr.kind) kind, MAX(pr.category) category FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` AND pr.name IS NOT NULL GROUP BY p.record_id, p.program_year, pkey) GROUP BY pkey ORDER BY total DESC LIMIT 25`},
 				{"research_studies", `SELECT nct_id, MAX(name_of_study) name_of_study, company, COUNT(*) payments, SUM(amount) total, MIN(program_year) first_year, MAX(program_year) last_year FROM payments_research p WHERE ` + w + ` GROUP BY nct_id, company ORDER BY total DESC LIMIT 50`},
 			}
 			for _, s := range sections {
@@ -133,7 +133,7 @@ func newCompanyCmd(flags *rootFlags) *cobra.Command {
 	var f opFilter
 	cmd := &cobra.Command{
 		Use:   "company <name>",
-		Short: "Who a company pays: top recipients, specialties, states, products and natures by year",
+		Short: "Show who a company pays: top recipients, specialties, states, products and natures by year",
 		Long: `A paying company's footprint in the synced scope. The name is a
 case-insensitive substring ("stryker" matches "Stryker Corporation").
 
@@ -171,7 +171,7 @@ compare two companies' recipients; use 'overlap' instead.`,
 				{"by_specialty", `SELECT specialty, COUNT(DISTINCT npi) recipients, SUM(amount) total FROM payments_general p WHERE ` + w + ` AND specialty IS NOT NULL GROUP BY specialty ORDER BY total DESC LIMIT 15`},
 				{"by_state", `SELECT state, COUNT(DISTINCT npi) recipients, SUM(amount) total FROM payments_general p WHERE ` + w + ` GROUP BY state ORDER BY total DESC LIMIT 15`},
 				{"by_nature", `SELECT nature, COUNT(*) payments, SUM(amount) total FROM payments_general p WHERE ` + w + ` GROUP BY nature ORDER BY total DESC`},
-				{"by_product", `SELECT MAX(name) product, MAX(kind) kind, COUNT(*) payments, SUM(amount) total FROM (SELECT DISTINCT p.record_id, p.program_year, p.amount, LOWER(pr.name) pkey, pr.name, pr.kind FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` AND pr.name IS NOT NULL) GROUP BY pkey ORDER BY total DESC LIMIT 15`},
+				{"by_product", `SELECT MAX(name) product, MAX(kind) kind, COUNT(*) payments, SUM(amount) total FROM (SELECT p.record_id, p.program_year, MAX(p.amount) amount, LOWER(pr.name) pkey, MAX(pr.name) name, MAX(pr.kind) kind FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` AND pr.name IS NOT NULL GROUP BY p.record_id, p.program_year, pkey) GROUP BY pkey ORDER BY total DESC LIMIT 15`},
 				{"research_by_year", `SELECT program_year, COUNT(*) payments, COUNT(DISTINCT nct_id) studies, SUM(amount) total FROM payments_research p WHERE ` + w + ` GROUP BY program_year ORDER BY program_year`},
 			}
 			for _, s := range sections {
@@ -180,6 +180,9 @@ compare two companies' recipients; use 'overlap' instead.`,
 					return err
 				}
 				out[s.key] = rows
+				if s.key == "matched_names" && len(rows) == 0 {
+					return notFoundErr(fmt.Errorf("no match for %q in synced payments (check the name or sync that company's scope)", f.companies))
+				}
 			}
 			return flags.printJSON(cmd, out)
 		},
@@ -193,7 +196,7 @@ func newTopCmd(flags *rootFlags) *cobra.Command {
 	var by, typ string
 	cmd := &cobra.Command{
 		Use:   "top",
-		Short: "Leaderboards: top recipients, companies, products, states, specialties or hospitals by dollars",
+		Short: "Rank top recipients, companies, products, states, specialties or hospitals by dollars",
 		Long: `Ranks the synced scope by total dollars.
 
 Use this command for all-nature dollar leaderboards. Do NOT use it to rank
@@ -240,9 +243,9 @@ use it for radius questions around a ZIP; use 'near' instead.`,
 				// DISTINCT payment × product name, so a product repeated across
 				// slots of one payment is counted once.
 				q = `SELECT MAX(name) product, MAX(kind) kind, MAX(category) category, COUNT(*) payments, COUNT(DISTINCT npi) recipients, SUM(amount) total, MAX(dataset_modified) dataset_modified FROM (
-					SELECT DISTINCT p.record_id, p.program_year, p.npi, p.amount, p.dataset_modified, LOWER(pr.name) pkey, pr.name, pr.kind, pr.category
+					SELECT p.record_id, p.program_year, MAX(p.npi) npi, MAX(p.amount) amount, MAX(p.dataset_modified) dataset_modified, LOWER(pr.name) pkey, MAX(pr.name) name, MAX(pr.kind) kind, MAX(pr.category) category
 					FROM ` + table + ` p JOIN products pr ON pr.payment_type='` + typ + `' AND pr.record_id=p.record_id AND pr.program_year=p.program_year
-					WHERE ` + w + ` AND pr.name IS NOT NULL) GROUP BY pkey ORDER BY total DESC LIMIT ?`
+					WHERE ` + w + ` AND pr.name IS NOT NULL GROUP BY p.record_id, p.program_year, pkey) GROUP BY pkey ORDER BY total DESC LIMIT ?`
 			case "state":
 				q = `SELECT state, COUNT(*) payments, COUNT(DISTINCT npi) recipients, SUM(` + amount + `) total FROM ` + table + ` p WHERE ` + w + ` GROUP BY state ORDER BY total DESC LIMIT ?`
 			case "specialty":
@@ -270,7 +273,7 @@ func newResearchCmd(flags *rootFlags) *cobra.Command {
 	var hasNCT bool
 	cmd := &cobra.Command{
 		Use:   "research",
-		Short: "Research payments with principal investigators, study name, NCT ID and sponsor",
+		Short: "List research payments with principal investigators, study name, NCT ID and sponsor",
 		Long: `Research payment rows from the local store. --state and --specialty match
 the covered recipient OR any of the five principal investigators, so trials
 paid to a hospital still surface under the PI's specialty and state.
@@ -338,7 +341,7 @@ func newHospitalCmd(flags *rootFlags) *cobra.Command {
 	var metric string
 	cmd := &cobra.Command{
 		Use:   "hospital [ccn|name]",
-		Short: "Payments to a teaching hospital, or rank teaching hospitals by research or general dollars",
+		Short: "Show payments to a teaching hospital, or rank teaching hospitals by research or general dollars",
 		Example: `  openpayments-pp-cli hospital --state PA --metric research --limit 20
   openpayments-pp-cli hospital 390111 --json
   openpayments-pp-cli hospital "Hospital of the University of Pennsylvania"`,
@@ -373,6 +376,7 @@ func newHospitalCmd(flags *rootFlags) *cobra.Command {
 				harg = "%" + strings.ToLower(arg) + "%"
 			}
 			out := map[string]any{"hospital": arg}
+			found := false
 			for _, s := range []struct{ key, table string }{{"general", "payments_general"}, {"research", "payments_research"}} {
 				rows, err := queryArgs(ctx, db, `SELECT p.teaching_hospital_ccn ccn, MAX(p.teaching_hospital_name) hospital, p.program_year, COUNT(*) payments, SUM(p.amount) total, COUNT(DISTINCT p.company) companies
 					FROM `+s.table+` p WHERE `+hw+` AND `+w+` GROUP BY p.teaching_hospital_ccn, p.program_year ORDER BY p.program_year`, append([]any{harg}, a...)...)
@@ -385,6 +389,10 @@ func newHospitalCmd(flags *rootFlags) *cobra.Command {
 					return err
 				}
 				out[s.key+"_top_companies"] = top
+				found = found || len(rows) > 0
+			}
+			if !found {
+				return notFoundErr(fmt.Errorf("no match for %q among synced teaching hospitals (use a CCN or part of the name)", arg))
 			}
 			return flags.printJSON(cmd, out)
 		},
@@ -399,7 +407,7 @@ func newOwnershipCmd(flags *rootFlags) *cobra.Command {
 	var groupBy string
 	cmd := &cobra.Command{
 		Use:   "ownership",
-		Short: "Physician ownership and investment interests, grouped by company or listed",
+		Short: "List physician ownership and investment interests, individually or grouped by company",
 		Example: `  openpayments-pp-cli ownership --state NJ --group-by company
   openpayments-pp-cli ownership --state PA --group-by none --json`,
 		Annotations: ann(),
@@ -440,7 +448,7 @@ func newNatureCmd(flags *rootFlags) *cobra.Command {
 	var npi string
 	cmd := &cobra.Command{
 		Use:   "nature",
-		Short: "Breakdown of general payments by nature (consulting, food, travel, royalties...)",
+		Short: "Break down general payments by nature (consulting, food, travel, royalties...)",
 		Example: `  openpayments-pp-cli nature --state PA --year 2024
   openpayments-pp-cli nature --npi 1234567890 --json`,
 		Annotations: ann(),
@@ -477,7 +485,7 @@ func newProductCmd(flags *rootFlags) *cobra.Command {
 	var kind string
 	cmd := &cobra.Command{
 		Use:   "product <name>",
-		Short: "Every clinician paid in connection with a drug, biologic or device",
+		Short: "List every clinician paid in connection with a drug, biologic or device",
 		Example: `  openpayments-pp-cli product Mako --state PA
   openpayments-pp-cli product "SPINAL CORD STIMULATOR" --kind Device --json`,
 		Annotations: ann(),
@@ -514,7 +522,14 @@ func newProductCmd(flags *rootFlags) *cobra.Command {
 				FROM payments_general p WHERE ` + w + ` AND EXISTS (SELECT 1 FROM products pr WHERE ` + match + `)
 				GROUP BY COALESCE(p.npi, p.teaching_hospital_ccn) ORDER BY total DESC LIMIT ?`
 			a = append(append(append([]any{}, margs...), a...), margs...)
-			return runLocal(ctx, cmd, flags, db, q, append(a, f.limit)...)
+			rows, err := queryArgs(ctx, db, q, append(a, f.limit)...)
+			if err != nil {
+				return err
+			}
+			if len(rows) == 0 {
+				return notFoundErr(fmt.Errorf("no match for %q among synced product names or categories", strings.Join(args, " ")))
+			}
+			return printRowsDB(cmd, flags, db, rows)
 		},
 	}
 	addFilterFlags(cmd, &f, 50)

@@ -28,7 +28,7 @@ func openOPStore(ctx context.Context) (*store.Store, *sql.DB, error) {
 		return nil, nil, fmt.Errorf("opening local store: %w", err)
 	}
 	if err := op.EnsureSchema(s.DB()); err != nil {
-		s.Close()
+		_ = s.Close()
 		return nil, nil, err
 	}
 	return s, s.DB(), nil

@@ -144,7 +144,7 @@ openpayments-pp-cli kol --specialty "Physical Medicine" --state PA
 
 ## Unique Features
 
-These are computed locally from the synced Open Payments store (and ClinicalTrials.gov for trials commands).
+These capabilities aren't available in any other tool for this API.
 
 ### Relationship intelligence
 - **`kol`** — Rank physicians in a specialty and region by speaking and consulting dollars, number of paying companies and years active.
@@ -154,7 +154,7 @@ These are computed locally from the synced Open Payments store (and ClinicalTria
   ```bash
   openpayments-pp-cli kol --specialty "Physical Medicine" --state PA --agent
   ```
-- **`new-recipients`** — See which clinicians received industry payments this year for the first time.
+- **`new-recipients`** — See which clinicians received industry payments this year for the first time, compared against every earlier synced year.
 
   _Use when asked who is new to industry payments or which new relationships a company started._
 
@@ -203,7 +203,7 @@ These are computed locally from the synced Open Payments store (and ClinicalTria
   ```bash
   openpayments-pp-cli concentration "Stryker Corporation" --year 2024 --agent
   ```
-- **`changed`** — See records added, corrected or removed since the previous sync.
+- **`changed`** — See records added, corrected or removed by the latest re-sync (needs at least two syncs of the same scope).
 
   _Use after a CMS refresh to see what moved._
 
@@ -226,7 +226,7 @@ These are computed locally from the synced Open Payments store (and ClinicalTria
   ```bash
   openpayments-pp-cli research-sites --specialty "Pain Medicine" --state PA,NJ --agent
   ```
-- **`trials gaps`** — List recruiting trials in your region whose sponsor pays no local principal investigator.
+- **`trials gaps`** — List recruiting trials in your region whose sponsor pays no local principal investigator. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct).
 
   _Use when looking for trials that still need local sites._
 
@@ -240,14 +240,14 @@ These are computed locally from the synced Open Payments store (and ClinicalTria
   ```bash
   openpayments-pp-cli investigators --nct NCT04280705 --agent
   ```
-- **`near`** — Find paid clinicians within N miles of a ZIP code.
+- **`near`** — Find paid clinicians within N miles of a ZIP code (ZIP-centroid distance).
 
   _Use for geographic questions around a ZIP._
 
   ```bash
   openpayments-pp-cli near --zip 19002 --miles 25 --type research --agent
   ```
-- **`trials sponsor`** — Show a sponsor's ClinicalTrials.gov trials with the sites it already pays.
+- **`trials sponsor`** — Show a sponsor's ClinicalTrials.gov trials with the sites it already pays. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct).
 
   _Use for one sponsor's trial portfolio._
 
@@ -266,6 +266,14 @@ These are computed locally from the synced Open Payments store (and ClinicalTria
 
 ## Recipes
 
+### Sync a scope
+
+```bash
+openpayments-pp-cli sync --years 2019-2025 --npi 1234567890
+```
+
+Every local command reads synced data; scope by --states, --specialty, --npi or --company (or --full --bulk --year 2024 --type research for a bulk CSV).
+
 ### Top PA recipients
 
 ```bash
@@ -280,7 +288,7 @@ Top 20 PA recipients by total general payments, narrowed to three fields.
 openpayments-pp-cli dossier 1234567890 --agent
 ```
 
-Every payment for one NPI by year, company, nature and product, with dispute status.
+Totals by year, company, nature and product with disputed-payment counts for one NPI; add --payments N for individual rows.
 
 ### PIs on one trial
 
@@ -507,6 +515,8 @@ Static request headers can be configured under `headers`; per-command header ove
 - **Local commands return nothing** — Run sync for the scope first, e.g. openpayments-pp-cli sync --years 2024 --states PA
 - **Name or company filter is slow on live data** — Live wildcard filters take ~30 s on 15M-row years; sync the scope and query locally instead
 - **Dataset ID not found after a CMS refresh** — Run openpayments-pp-cli datasets resolve --refresh; IDs change every June and January
+- **dossier/relationships says 'no match' for an NPI** — The NPI is outside the synced scope; run openpayments-pp-cli sync --years 2019-2025 --npi <NPI>
+- **trials gaps marks a trial as a gap you know is covered** — Sponsor names are matched to CMS manufacturer names by normalized text; pass --sponsor-alias "CT sponsor=CMS name" and sync the region's research payments
 
 ## Sources & Inspiration
 

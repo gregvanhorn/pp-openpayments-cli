@@ -2,7 +2,7 @@
   "dir": "\u003ccli-dir\u003e/openpayments-pp-cli",
   "spec_path": "\u003ccli-dir\u003e/spec.json",
   "spec_source": "bundled",
-  "verdict": "WARN",
+  "verdict": "PASS",
   "path_check": {
     "tested": 2,
     "valid": 2,
@@ -30,13 +30,8 @@
     "dead": 0
   },
   "dead_functions": {
-    "total": 113,
-    "dead": 3,
-    "items": [
-      "handleBinaryResponseDelivery",
-      "readSecretFromStdin",
-      "successfulNoop"
-    ]
+    "total": 110,
+    "dead": 0
   },
   "pipeline_check": {
     "sync_calls_domain": true,
@@ -100,7 +95,5 @@
     "checked": 0,
     "skipped": true
   },
-  "issues": [
-    "3 dead helper functions found"
-  ]
+  "issues": null
 }

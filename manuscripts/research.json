@@ -210,7 +210,7 @@
     {
       "name": "New recipients",
       "command": "new-recipients",
-      "description": "See which clinicians received industry payments this year for the first time.",
+      "description": "See which clinicians received industry payments this year for the first time, compared against every earlier synced year.",
       "rationale": "Set difference across yearly partitions held in the local store.",
       "example": "openpayments-pp-cli new-recipients --year 2025 --state PA --agent",
       "why_it_matters": "Use when asked who is new to industry payments or which new relationships a company started.",
@@ -237,7 +237,7 @@
     {
       "name": "Trial gaps",
       "command": "trials gaps",
-      "description": "List recruiting trials in your region whose sponsor pays no local principal investigator.",
+      "description": "List recruiting trials in your region whose sponsor pays no local principal investigator. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct).",
       "rationale": "Joins ClinicalTrials.gov recruiting locations with Open Payments research PIs; no single source has both.",
       "example": "openpayments-pp-cli trials gaps --condition \"low back pain\" --state PA,NJ --agent",
       "why_it_matters": "Use when looking for trials that still need local sites.",
@@ -309,7 +309,7 @@
     {
       "name": "Radius search",
       "command": "near",
-      "description": "Find paid clinicians within N miles of a ZIP code.",
+      "description": "Find paid clinicians within N miles of a ZIP code (ZIP-centroid distance).",
       "rationale": "Haversine over a bundled ZIP centroid table.",
       "example": "openpayments-pp-cli near --zip 19002 --miles 25 --type research --agent",
       "why_it_matters": "Use for geographic questions around a ZIP.",
@@ -318,7 +318,7 @@
     {
       "name": "Change detection",
       "command": "changed",
-      "description": "See records added, corrected or removed since the previous sync.",
+      "description": "See records added, corrected or removed by the latest re-sync (needs at least two syncs of the same scope).",
       "rationale": "Diffs each sync against the local store and CMS change_type.",
       "example": "openpayments-pp-cli changed --since-last-sync --agent",
       "why_it_matters": "Use after a CMS refresh to see what moved.",
@@ -336,7 +336,7 @@
     {
       "name": "Sponsor trial map",
       "command": "trials sponsor",
-      "description": "Show a sponsor's ClinicalTrials.gov trials with the sites it already pays.",
+      "description": "Show a sponsor's ClinicalTrials.gov trials with the sites it already pays. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct).",
       "rationale": "Joins ClinicalTrials.gov lead-sponsor trials to local research payments by NCT.",
       "example": "openpayments-pp-cli trials sponsor \"Medtronic\" --agent",
       "why_it_matters": "Use for one sponsor's trial portfolio.",
@@ -390,7 +390,7 @@
       },
       {
         "symptom": "dossier/relationships says 'no match' for an NPI",
-        "fix": "The NPI is outside the synced scope; run openpayments-pp-cli sync --years 2019-2025 --npi <NPI>"
+        "fix": "The NPI is outside the synced scope; run openpayments-pp-cli sync --years 2019-2025 --npi \u003cNPI\u003e"
       },
       {
         "symptom": "trials gaps marks a trial as a gap you know is covered",

@@ -6,6 +6,8 @@ package cli
 
 import (
 	"bytes"
+	"context"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -31,5 +33,24 @@ func TestNovelTrialsSponsorHelpWires(t *testing.T) {
 		if !strings.Contains(help, want) {
 			t.Fatalf("trials sponsor --help missing %q in output:\n%s", want, help)
 		}
+	}
+}
+
+// TestSponsorTrialPaymentsSQLParses runs the per-trial join against an empty
+// schema so a malformed statement fails here instead of at runtime.
+func TestSponsorTrialPaymentsSQLParses(t *testing.T) {
+	testenv.Isolate(t)
+	ctx := context.Background()
+	st, db, err := openOPStore(ctx)
+	if err != nil {
+		t.Fatalf("openOPStore: %v", err)
+	}
+	defer st.Close()
+	rows, err := queryArgs(ctx, db, sponsorTrialPaymentsSQL, "NCT00000000", "NCT00000000", "NCT00000000")
+	if err != nil {
+		t.Fatalf("sponsorTrialPaymentsSQL: %v", err)
+	}
+	if len(rows) != 1 || fmt.Sprint(rows[0]["payments"]) != "0" || fmt.Sprint(rows[0]["pi_names"]) != "" {
+		t.Fatalf("unexpected empty-store row: %v", rows)
 	}
 }

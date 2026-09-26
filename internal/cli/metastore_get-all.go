@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -51,6 +52,11 @@ func newMetastoreGetAllCmd(flags *rootFlags) *cobra.Command {
 			data, prov, err := resolveReadWithStrategyAndResponsePath(cmd.Context(), c, flags, "live", "metastore", false, path, params, nil, "", cmd.ErrOrStderr())
 			if err != nil {
 				return classifyAPIError(cmd.OutOrStdout(), err, flags)
+			}
+			// CMS answers an unknown schema_id with 200 and []; surface it as
+			// not found (known schemas are listed by 'metastore get-schemas').
+			if strings.TrimSpace(string(data)) == "[]" {
+				return notFoundErr(fmt.Errorf("no match for schema %q; list schemas with 'openpayments-pp-cli metastore get-schemas'", args[0]))
 			}
 			outputData := data
 			// Print provenance to stderr for human-facing output only.

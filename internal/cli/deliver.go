@@ -5,16 +5,13 @@ package cli
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"openpayments-pp-cli/internal/client"
 	"openpayments-pp-cli/internal/cliutil"
 )
 
@@ -74,35 +71,6 @@ func Deliver(sink DeliverSink, body []byte, compact bool) error {
 	default:
 		return fmt.Errorf("unsupported deliver sink %q", sink.Scheme)
 	}
-}
-
-func unwrapBinaryDeliverBody(body []byte) (raw []byte, contentType string, ok bool) {
-	return client.UnwrapBinaryResponse(body)
-}
-
-func binaryDeliverPayload(body []byte) (raw []byte, contentType string) {
-	if raw, contentType, ok := unwrapBinaryDeliverBody(body); ok {
-		return raw, contentType
-	}
-	return body, ""
-}
-
-type binaryDeliverReceipt struct {
-	Delivered   bool   `json:"delivered"`
-	Sink        string `json:"sink"`
-	Target      string `json:"target"`
-	Bytes       int    `json:"bytes"`
-	ContentType string `json:"content_type,omitempty"`
-}
-
-func writeBinaryDeliverReceipt(w io.Writer, sink DeliverSink, raw []byte, contentType string) error {
-	return json.NewEncoder(w).Encode(binaryDeliverReceipt{
-		Delivered:   true,
-		Sink:        sink.Scheme,
-		Target:      sink.Target,
-		Bytes:       len(raw),
-		ContentType: contentType,
-	})
 }
 
 func deliverFile(path string, body []byte) error {

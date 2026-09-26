@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -39,7 +40,7 @@ side-by-side; use 'compare' instead.`,
 			list := splitCSVFlag(npis)
 			list = append(list, args...)
 			if file != "" {
-				fh, err := os.Open(file)
+				fh, err := os.Open(filepath.Clean(file))
 				if err != nil {
 					return usageErr(err)
 				}
@@ -49,7 +50,7 @@ side-by-side; use 'compare' instead.`,
 						list = append(list, t)
 					}
 				}
-				fh.Close()
+				_ = fh.Close()
 			}
 			if len(list) == 0 {
 				return usageErr(fmt.Errorf("pass NPIs with --npi, as arguments, or with --file"))

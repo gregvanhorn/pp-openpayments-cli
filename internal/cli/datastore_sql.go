@@ -19,6 +19,7 @@ func newDatastoreSqlCmd(flags *rootFlags) *cobra.Command {
 		Use:         "sql",
 		Aliases:     []string{"list"},
 		Short:       "Interact with resources in the datastore using an SQL-like syntax.",
+		Example:     "  openpayments-pp-cli datastore sql --query '[SELECT record_id,total_amount_of_payment_usdollars FROM 93b512a7-7f65-539b-9e20-bbcc535750bd][LIMIT 2]'\n  openpayments-pp-cli sql '[SELECT record_id FROM general:2024][LIMIT 2]'   # resolves the distribution ID for you",
 		Annotations: map[string]string{"pp:endpoint": "datastore.sql", "pp:method": "GET", "pp:path": "/api/1/datastore/sql", "mcp:read-only": "true", "pp:requires-input": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Bare invocation of a command with required input prints help

@@ -92,11 +92,12 @@ func openQueryOnly(path string) (*sql.DB, error) {
 
 // queryLocal runs one read-only statement and returns rows as maps.
 func queryLocal(ctx context.Context, db *sql.DB, q string, limit int) ([]map[string]any, error) {
-	q = strings.TrimRight(strings.TrimSpace(q), "; \t\n")
-	if strings.Contains(q, ";") && !quotedSemicolonsOnly(q) {
+	q = strings.TrimSpace(q)
+	code := strings.TrimRight(strings.TrimSpace(sqlCode(q)), "; \t\n")
+	if strings.Contains(code, ";") {
 		return nil, fmt.Errorf("sql runs exactly one statement; remove ';'")
 	}
-	if attachSQLRE.MatchString(q) {
+	if attachSQLRE.MatchString(code) {
 		return nil, fmt.Errorf("sql is read-only: ATTACH, DETACH, PRAGMA and VACUUM are not allowed")
 	}
 	rows, err := db.QueryContext(ctx, q)
@@ -190,13 +191,13 @@ func describeSchema(ctx context.Context, db *sql.DB) ([]SchemaTable, error) {
 		for rows.Next() {
 			var c SchemaColumn
 			if err := rows.Scan(&c.Name, &c.Type); err != nil {
-				rows.Close()
+				_ = rows.Close()
 				return nil, err
 			}
 			st.Columns = append(st.Columns, c)
 		}
 		rerr := rows.Err()
-		rows.Close()
+		_ = rows.Close()
 		if rerr != nil {
 			return nil, rerr
 		}
@@ -308,7 +309,7 @@ filters or sync the scope and use 'sql'.`,
 				return err
 			}
 			if flags.dryRun {
-				return flags.printJSON(cmd, map[string]any{"dry_run": true, "dataset": d.Title, "path": "/api/1/datastore/query/" + d.DatasetID + "/0", "params": q.Values()})
+				return flags.printJSON(cmd, map[string]any{"dry_run": true, "action": "query", "dataset": d.Title, "path": "/api/1/datastore/query/" + d.DatasetID + "/0", "params": q.Values()})
 			}
 			c, err := flags.newClient()
 			if err != nil {
@@ -362,20 +363,36 @@ func pageLimit(q op.Query) int {
 	return q.Limit
 }
 
-// quotedSemicolonsOnly reports whether every ';' in q sits inside a quoted literal.
-func quotedSemicolonsOnly(q string) bool {
-	var quote rune
-	for _, r := range q {
+// sqlCode returns q with string literals and comments blanked out, so
+// statement-shape checks only see executable SQL.
+func sqlCode(q string) string {
+	var b strings.Builder
+	rs := []rune(q)
+	for i := 0; i < len(rs); i++ {
+		r := rs[i]
 		switch {
-		case quote != 0:
-			if r == quote {
-				quote = 0
+		case r == '\'' || r == '"' || r == '`':
+			j := i + 1
+			for j < len(rs) && rs[j] != r {
+				j++
 			}
-		case r == '\'' || r == '"':
-			quote = r
-		case r == ';':
-			return false
+			b.WriteString(" ")
+			i = j
+		case r == '-' && i+1 < len(rs) && rs[i+1] == '-':
+			for i < len(rs) && rs[i] != '\n' {
+				i++
+			}
+			b.WriteString(" ")
+		case r == '/' && i+1 < len(rs) && rs[i+1] == '*':
+			i += 2
+			for i+1 < len(rs) && !(rs[i] == '*' && rs[i+1] == '/') {
+				i++
+			}
+			i++
+			b.WriteString(" ")
+		default:
+			b.WriteRune(r)
 		}
 	}
-	return true
+	return b.String()
 }

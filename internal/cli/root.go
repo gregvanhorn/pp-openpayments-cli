@@ -267,15 +267,15 @@ func isCobraUsageError(err error) bool {
 func newRootCmd(flags *rootFlags) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "openpayments-pp-cli",
-		Short: `Openpayments CLI — A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising…`,
-		Long: `Openpayments CLI — A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data.
+		Short: `CMS Open Payments CLI — A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising…`,
+		Long: `CMS Open Payments CLI — A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data.
 
 Highlights (not in the official API docs):
   • kol   Rank physicians in a specialty and region by speaking and consulting dollars, number of paying companies and years active.
-  • new-recipients   See which clinicians received industry payments this year for the first time.
+  • new-recipients   See which clinicians received industry payments this year for the first time, compared against every earlier synced year.
   • rising   Find recipient-company pairs whose dollars grew the most year over year.
   • research-sites   Rank sites and principal investigators by research dollars, trials and sponsors for a specialty and region.
-  • trials gaps   List recruiting trials in your region whose sponsor pays no local principal investigator.
+  • trials gaps   List recruiting trials in your region whose sponsor pays no local principal investigator. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text…
   • compare   Put two or more clinicians side by side by year, company and nature of payment.
   • relationships   Show every company that paid a clinician with first year, last year, total and trend.
   • investigators   List every principal investigator paid for one ClinicalTrials.gov study, deduplicated.
@@ -283,8 +283,8 @@ Highlights (not in the official API docs):
   • roster   Summarize payments for a whole list of NPIs in one pass, including disputed counts.
   • ask   Print the local schema, a plain-word glossary and worked SQL examples for any question.
   • concentration   Measure how concentrated a company's spend is: top-10 share, HHI and recipients to reach 50% and 80%.
-  • near   Find paid clinicians within N miles of a ZIP code.
-  • changed   See records added, corrected or removed since the previous sync.
+  • near   Find paid clinicians within N miles of a ZIP code (ZIP-centroid distance).
+  • changed   See records added, corrected or removed by the latest re-sync (needs at least two syncs of the same scope).
   • cooling   Find recipient-company pairs whose dollars fell or stopped year over year.
   …and 1 more — see README.md for the full list
 

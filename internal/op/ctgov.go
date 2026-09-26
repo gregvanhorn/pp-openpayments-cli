@@ -143,7 +143,7 @@ func (c *CTGov) get(ctx context.Context, path string, q url.Values) ([]byte, err
 			return nil, err
 		}
 		body, rerr := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= 500 {
 			c.limiter.OnRateLimit()
 			if attempt < 3 {

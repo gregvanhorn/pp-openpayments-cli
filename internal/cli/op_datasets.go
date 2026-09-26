@@ -168,7 +168,7 @@ GB (15M+ rows); use --dry-run to see the URL first, or 'sync --full --bulk
 			if out == "" {
 				out = filepath.Base(d.DownloadURL)
 			}
-			info := map[string]any{"title": d.Title, "url": d.DownloadURL, "out": out, "dataset_modified": d.Modified}
+			info := map[string]any{"action": "download", "title": d.Title, "url": d.DownloadURL, "out": out, "dataset_modified": d.Modified}
 			if flags.dryRun || cliutil.IsAnyHarness() {
 				info["dry_run"] = true
 				return flags.printJSON(cmd, info)
@@ -212,16 +212,27 @@ func downloadTo(ctx context.Context, url, out string) (int64, error) {
 	if resp.StatusCode != http.StatusOK {
 		return 0, fmt.Errorf("download %s: HTTP %d", url, resp.StatusCode)
 	}
-	f, err := os.Create(out)
+	// Write to a .part file and rename, so a failed transfer never leaves a
+	// truncated file that later looks complete.
+	tmp := out + ".part"
+	f, err := os.Create(filepath.Clean(tmp))
 	if err != nil {
 		return 0, err
 	}
-	defer f.Close()
 	n, err := io.Copy(f, resp.Body)
-	if err == nil {
-		fmt.Fprintf(os.Stderr, "wrote %s (%s bytes)\n", out, strconv.FormatInt(n, 10))
+	if cerr := f.Close(); err == nil {
+		err = cerr
 	}
-	return n, err
+	if err != nil {
+		_ = os.Remove(tmp)
+		return n, err
+	}
+	if err := os.Rename(tmp, out); err != nil {
+		_ = os.Remove(tmp)
+		return n, err
+	}
+	fmt.Fprintf(os.Stderr, "wrote %s (%s bytes)\n", out, strconv.FormatInt(n, 10))
+	return n, nil
 }
 
 // runBulkSync loads a bulk CSV into the local store for --full syncs.

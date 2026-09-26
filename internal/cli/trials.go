@@ -35,7 +35,7 @@ func newTrialsSitesCmd(flags *rootFlags) *cobra.Command {
 	var refresh bool
 	cmd := &cobra.Command{
 		Use:   "sites",
-		Short: "A trial's status, phase, sponsor and locations plus every Open Payments PI paid for it",
+		Short: "Show a trial's status, phase, sponsor and locations plus every Open Payments PI paid for it",
 		Long: `Fetches one study from ClinicalTrials.gov and lists its locations beside the
 principal investigators Open Payments shows were paid for that NCT ID
 (from the local store). paid_pi_nearby marks locations whose city and state

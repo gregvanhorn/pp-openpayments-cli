@@ -127,9 +127,9 @@ func filtersFor(typ string, s Scope) []filterSpec {
 	var baseDesc []string
 	if len(s.Companies) > 0 {
 		base = append(base, Condition{Property: companyField, Operator: "in", Value: s.Companies})
-		baseWhere = append(baseWhere, "company IN ("+placeholders(len(s.Companies))+")")
+		baseWhere = append(baseWhere, "LOWER(company) IN ("+placeholders(len(s.Companies))+")")
 		for _, c := range s.Companies {
-			baseArgs = append(baseArgs, c)
+			baseArgs = append(baseArgs, strings.ToLower(c))
 		}
 		baseDesc = append(baseDesc, "company="+strings.Join(s.Companies, "|"))
 	}
@@ -516,7 +516,7 @@ func (w *writer) writePage(pg pageResult) error {
 	for _, n := range names[2:] {
 		updates = append(updates, n+"=excluded."+n)
 	}
-	insert := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s) ON CONFLICT(record_id, program_year) DO UPDATE SET %s`,
+	insert := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s) ON CONFLICT(record_id, program_year) DO UPDATE SET %s`, // #nosec G201 -- table and column names come from the static schema in normalize.go (TableFor/Columns), never from input; values are bound as ? parameters
 		table, strings.Join(names, ","), placeholders(len(names)), strings.Join(updates, ","))
 	amountCol := "amount"
 	if u.typ == TypeOwnership {
@@ -678,12 +678,12 @@ func (w *writer) reconcileDeletes(u *scopeUnit) (int, error) {
 	for rows.Next() {
 		var g gone
 		if err := rows.Scan(&g.id, &g.amt, &g.npi, &g.name, &g.company); err != nil {
-			rows.Close()
+			_ = rows.Close()
 			return 0, err
 		}
 		dead = append(dead, g)
 	}
-	rows.Close()
+	_ = rows.Close()
 	if err := rows.Err(); err != nil {
 		return 0, err
 	}

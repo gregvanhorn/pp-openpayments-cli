@@ -13,13 +13,21 @@ import (
 	"openpayments-pp-cli/internal/op"
 )
 
+// sponsorTrialPaymentsSQL joins one NCT ID to local research payments and
+// the paid principal investigators on those payment records. Arguments: the
+// NCT ID three times.
+const sponsorTrialPaymentsSQL = `SELECT COUNT(*) payments, ROUND(COALESCE(SUM(p.amount),0),2) research_total,
+(SELECT COUNT(DISTINCT COALESCE(i.npi,i.name)) FROM research_investigators i JOIN payments_research q ON q.record_id=i.record_id AND q.program_year=i.program_year WHERE q.nct_id = ?) paid_pis,
+COALESCE((SELECT GROUP_CONCAT(DISTINCT i.name || ' (' || COALESCE(i.city,'') || ' ' || COALESCE(i.state,'') || ')') FROM research_investigators i JOIN payments_research q ON q.record_id=i.record_id AND q.program_year=i.program_year WHERE q.nct_id = ?), '') pi_names
+FROM payments_research p WHERE p.nct_id = ?`
+
 func newNovelTrialsSponsorCmd(flags *rootFlags) *cobra.Command {
 	var status, states string
 	var aliases []string
 	var limit, maxPages int
 	cmd := &cobra.Command{
 		Use:   "sponsor <company>",
-		Short: "A sponsor's ClinicalTrials.gov trials with the sites and PIs it already pays",
+		Short: "List a sponsor's ClinicalTrials.gov trials with the sites and PIs it already pays",
 		Long: `Lists the company's trials from ClinicalTrials.gov (default: active
 statuses) and joins each NCT ID to local Open Payments research payments:
 dollars, paid PI count and paid PIs. --state narrows to trials with a site in
@@ -86,10 +94,7 @@ use it for trials missing local PIs; use 'trials gaps' instead.`,
 				if len(region) > 0 && len(sites) == 0 {
 					continue
 				}
-				rows, err := queryArgs(ctx, db, `SELECT COUNT(*) payments, ROUND(COALESCE(SUM(p.amount),0),2) research_total,
-					(SELECT COUNT(DISTINCT COALESCE(i.npi,i.name)) FROM research_investigators i JOIN payments_research q ON q.record_id=i.record_id AND q.program_year=i.program_year WHERE q.nct_id = ?) paid_pis,
-					(SELECT COALESCE(GROUP_CONCAT(DISTINCT i.name || ' (' || COALESCE(i.city,'') || ' ' || COALESCE(i.state,'') || ')') FROM research_investigators i JOIN payments_research q ON q.record_id=i.record_id AND q.program_year=i.program_year WHERE q.nct_id = ?), '') pi_names
-					FROM payments_research p WHERE p.nct_id = ?`, t.NCTID, t.NCTID, t.NCTID)
+				rows, err := queryArgs(ctx, db, sponsorTrialPaymentsSQL, t.NCTID, t.NCTID, t.NCTID)
 				if err != nil {
 					return err
 				}
@@ -103,6 +108,9 @@ use it for trials missing local PIs; use 'trials gaps' instead.`,
 				if limit > 0 && len(out) >= limit {
 					break
 				}
+			}
+			if len(out) == 0 {
+				return notFoundErr(fmt.Errorf("no match for sponsor %q among ClinicalTrials.gov lead sponsors with the requested statuses", sponsor))
 			}
 			return flags.printJSON(cmd, map[string]any{"sponsor": sponsor, "matched_open_payments_names": matched, "trials": out})
 		},

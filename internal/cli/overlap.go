@@ -14,7 +14,7 @@ func newNovelOverlapCmd(flags *rootFlags) *cobra.Command {
 	var f opFilter
 	cmd := &cobra.Command{
 		Use:   "overlap <company> <company>",
-		Short: "Recipients two companies both pay, and who only one of them pays",
+		Short: "Compare two companies' recipients: who both pay them and who only one pays",
 		Long: `Set comparison of the recipients (by NPI) two companies paid in the synced
 scope, with each company's dollars per shared recipient. Company names are
 case-insensitive substrings.

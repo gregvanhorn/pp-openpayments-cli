@@ -21,7 +21,7 @@ func newNovelTrialsGapsCmd(flags *rootFlags) *cobra.Command {
 	var limit, maxPages int
 	cmd := &cobra.Command{
 		Use:   "gaps",
-		Short: "Recruiting trials in your region whose sponsor pays no local principal investigator",
+		Short: "Find recruiting trials in your region whose sponsor pays no local principal investigator",
 		Long: `Searches ClinicalTrials.gov for trials matching --condition with a location in
 --state, then checks the local Open Payments research data: a trial is a gap
 when its lead sponsor (matched to Open Payments manufacturer names) paid no

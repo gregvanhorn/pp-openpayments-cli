@@ -27,10 +27,10 @@ type whichEntry struct {
 // endpoint commands follow so natural-language queries can find them.
 var whichIndex = []whichEntry{
 	{Command: "kol", Description: "Rank physicians in a specialty and region by speaking and consulting dollars, number of paying companies and years active.", Group: "Relationship intelligence", WhyItMatters: "Reach for this when asked who the key opinion leaders are in a specialty or territory."},
-	{Command: "new-recipients", Description: "See which clinicians received industry payments this year for the first time.", Group: "Relationship intelligence", WhyItMatters: "Use when asked who is new to industry payments or which new relationships a company started."},
+	{Command: "new-recipients", Description: "See which clinicians received industry payments this year for the first time, compared against every earlier synced year.", Group: "Relationship intelligence", WhyItMatters: "Use when asked who is new to industry payments or which new relationships a company started."},
 	{Command: "rising", Description: "Find recipient-company pairs whose dollars grew the most year over year.", Group: "Relationship intelligence", WhyItMatters: "Use for 'which relationships are growing' questions."},
 	{Command: "research-sites", Description: "Rank sites and principal investigators by research dollars, trials and sponsors for a specialty and region.", Group: "Trial-site intelligence", WhyItMatters: "Use when scouting proven trial sites or PIs in a region."},
-	{Command: "trials gaps", Description: "List recruiting trials in your region whose sponsor pays no local principal investigator.", Group: "Trial-site intelligence", WhyItMatters: "Use when looking for trials that still need local sites."},
+	{Command: "trials gaps", Description: "List recruiting trials in your region whose sponsor pays no local principal investigator. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct).", Group: "Trial-site intelligence", WhyItMatters: "Use when looking for trials that still need local sites."},
 	{Command: "compare", Description: "Put two or more clinicians side by side by year, company and nature of payment.", Group: "Relationship intelligence", WhyItMatters: "Use for side-by-side COI or KOL comparisons."},
 	{Command: "relationships", Description: "Show every company that paid a clinician with first year, last year, total and trend.", Group: "Relationship intelligence", WhyItMatters: "Use for how one clinician's industry relationships evolved."},
 	{Command: "investigators", Description: "List every principal investigator paid for one ClinicalTrials.gov study, deduplicated.", Group: "Trial-site intelligence", WhyItMatters: "Use when asked who was paid as PI on a specific trial."},
@@ -38,10 +38,10 @@ var whichIndex = []whichEntry{
 	{Command: "roster", Description: "Summarize payments for a whole list of NPIs in one pass, including disputed counts.", Group: "Relationship intelligence", WhyItMatters: "Use for conflict-of-interest reviews of many clinicians."},
 	{Command: "ask", Description: "Print the local schema, a plain-word glossary and worked SQL examples for any question.", Group: "Agent plumbing", WhyItMatters: "Use when no dedicated command fits and you need to write SQL."},
 	{Command: "concentration", Description: "Measure how concentrated a company's spend is: top-10 share, HHI and recipients to reach 50% and 80%.", Group: "Relationship intelligence", WhyItMatters: "Use for questions about how concentrated a company's payments are."},
-	{Command: "near", Description: "Find paid clinicians within N miles of a ZIP code.", Group: "Trial-site intelligence", WhyItMatters: "Use for geographic questions around a ZIP."},
-	{Command: "changed", Description: "See records added, corrected or removed since the previous sync.", Group: "Relationship intelligence", WhyItMatters: "Use after a CMS refresh to see what moved."},
+	{Command: "near", Description: "Find paid clinicians within N miles of a ZIP code (ZIP-centroid distance).", Group: "Trial-site intelligence", WhyItMatters: "Use for geographic questions around a ZIP."},
+	{Command: "changed", Description: "See records added, corrected or removed by the latest re-sync (needs at least two syncs of the same scope).", Group: "Relationship intelligence", WhyItMatters: "Use after a CMS refresh to see what moved."},
 	{Command: "cooling", Description: "Find recipient-company pairs whose dollars fell or stopped year over year.", Group: "Relationship intelligence", WhyItMatters: "Use for 'which relationships are cooling' questions."},
-	{Command: "trials sponsor", Description: "Show a sponsor's ClinicalTrials.gov trials with the sites it already pays.", Group: "Trial-site intelligence", WhyItMatters: "Use for one sponsor's trial portfolio."},
+	{Command: "trials sponsor", Description: "Show a sponsor's ClinicalTrials.gov trials with the sites it already pays. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct).", Group: "Trial-site intelligence", WhyItMatters: "Use for one sponsor's trial portfolio."},
 }
 
 // whichMatch pairs an index entry with its ranking score for a query.

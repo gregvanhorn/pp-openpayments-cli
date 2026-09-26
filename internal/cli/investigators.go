@@ -15,7 +15,7 @@ func newNovelInvestigatorsCmd(flags *rootFlags) *cobra.Command {
 	var f opFilter
 	cmd := &cobra.Command{
 		Use:   "investigators",
-		Short: "Every principal investigator paid for one ClinicalTrials.gov study, deduplicated",
+		Short: "List every principal investigator paid for one ClinicalTrials.gov study, deduplicated",
 		Long: `Flattens principal investigator slots 1-5 on every synced research payment
 that cites --nct into one row per PI with dollars, sponsors, years and
 location.

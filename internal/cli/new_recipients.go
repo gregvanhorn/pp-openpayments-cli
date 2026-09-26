@@ -13,7 +13,7 @@ func newNovelNewRecipientsCmd(flags *rootFlags) *cobra.Command {
 	var f opFilter
 	cmd := &cobra.Command{
 		Use:   "new-recipients",
-		Short: "Clinicians paid this year for the first time in any synced year",
+		Short: "List clinicians paid this year for the first time in any synced year",
 		Long: `Recipients (by NPI) with general or research payments in --year (default:
 latest synced year) and none in any earlier synced year. With --company,
 "new" means new to that company. Results are only as deep as your synced

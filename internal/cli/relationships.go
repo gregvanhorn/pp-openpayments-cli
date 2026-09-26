@@ -15,7 +15,7 @@ import (
 func newNovelRelationshipsCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "relationships <npi|name>",
-		Short: "Every company that paid a clinician: first year, last year, total and trend",
+		Short: "List every company that paid a clinician: first year, last year, total and trend",
 		Long: `One row per paying company for a recipient: first and last program year,
 years active, dollars per year, total, natures, and a trend label computed
 from the last two synced years (new, growing, shrinking, steady, ended).
