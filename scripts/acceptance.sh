@@ -51,6 +51,7 @@ run 4 "All PIs paid for NCT $NCT" 1 -- $B investigators --nct "$NCT" && record 4
 # 5
 if run 5 "Full dossier for NPI $NPI" 1 -- $B dossier "$NPI"; then
   LOC=$(echo "$OUT" | jq -r '[.by_year[] | select(.program_year==2024) | .total][0] // 0')
+  LIVE=$(live_sum 2024 covered_recipient_npi=$NPI)  # dossier spans every state
   record 5 "Full dossier for NPI $NPI" $(close "$LOC" "$LIVE" && echo PASS || echo FAIL) "${ELAPSED}ms; 2024 local=$LOC live=$LIVE"
 fi
 # 6

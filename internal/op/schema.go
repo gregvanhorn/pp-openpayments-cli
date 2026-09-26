@@ -58,6 +58,11 @@ var DDL = []string{
 	ccn TEXT PRIMARY KEY, hospital_id TEXT, name TEXT, city TEXT, state TEXT, zip5 TEXT)`,
 	`CREATE TABLE IF NOT EXISTS reporting_entities (
 	company_id TEXT PRIMARY KEY, name TEXT, state TEXT, country TEXT)`,
+	`CREATE TABLE IF NOT EXISTS company_names (
+	company TEXT PRIMARY KEY, company_id TEXT)`,
+	`CREATE TABLE IF NOT EXISTS general_pairs (
+	state TEXT, program_year INTEGER NOT NULL, npi TEXT NOT NULL, company TEXT, specialties TEXT, total REAL, n INTEGER,
+	PRIMARY KEY (state, program_year, npi, company))`,
 	`CREATE TABLE IF NOT EXISTS dataset_registry (
 	dataset_id TEXT PRIMARY KEY, year INTEGER, type TEXT, title TEXT, distribution_id TEXT,
 	modified TEXT, download_url TEXT, row_count INTEGER, resolved_at TEXT)`,
@@ -87,6 +92,8 @@ var DDL = []string{
 	`CREATE INDEX IF NOT EXISTS ix_gen_company ON payments_general(company)`,
 	`CREATE INDEX IF NOT EXISTS ix_gen_ccn ON payments_general(teaching_hospital_ccn)`,
 	`CREATE INDEX IF NOT EXISTS ix_gen_run ON payments_general(sync_run)`,
+	// Covering index for state/year/specialty/company rollups (top, company, kol...).
+	`CREATE INDEX IF NOT EXISTS ix_gen_cover ON payments_general(state, program_year, npi, company, amount, specialties, nature, record_id, dataset_modified)`,
 	`CREATE INDEX IF NOT EXISTS ix_res_npi ON payments_research(npi)`,
 	`CREATE INDEX IF NOT EXISTS ix_res_nct ON payments_research(nct_id)`,
 	`CREATE INDEX IF NOT EXISTS ix_res_state_year ON payments_research(state, program_year)`,
@@ -123,7 +130,7 @@ func firstLine(s string) string {
 // DomainTables lists the tables `schema` documents, in display order.
 var DomainTables = []string{
 	"payments_general", "payments_research", "research_investigators", "payments_ownership",
-	"products", "recipients", "teaching_hospitals", "reporting_entities",
+	"products", "recipients", "teaching_hospitals", "reporting_entities", "company_names", "general_pairs",
 	"dataset_registry", "sync_scopes", "sync_runs", "sync_changes",
 	"trials", "trial_locations", "zip_centroids",
 }
@@ -138,6 +145,8 @@ var TableDescriptions = map[string]string{
 	"recipients":             "One row per recipient (NPI, or profile id when no NPI) with first/last synced year and totals.",
 	"teaching_hospitals":     "Teaching hospitals seen in synced payments, keyed by CCN.",
 	"reporting_entities":     "Manufacturers and GPOs making payments, keyed by company_id.",
+	"general_pairs":          "Derived rollup of general payments per state, program_year, npi and company (total, n); rebuilt on every sync.",
+	"company_names":          "Every distinct company name as spelled on synced payment rows, with its company_id (resolves --company patterns).",
 	"dataset_registry":       "CMS dataset IDs per program year and type (dataset_id for query, distribution_id for SQL).",
 	"sync_scopes":            "One row per synced scope (type x year x filter) with the dataset modified date it reflects.",
 	"sync_runs":              "History of sync runs with added/amended/deleted counts.",

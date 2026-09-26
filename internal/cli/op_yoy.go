@@ -48,30 +48,38 @@ func runYoY(cmd *cobra.Command, flags *rootFlags, f opFilter, direction int, inc
 	if err != nil {
 		return err
 	}
-	pairs := `SELECT npi, company, SUM(amount) t, COUNT(*) n, MAX(recipient_name) name, MAX(specialty) specialty, MAX(city) city, MAX(state) state FROM payments_general p WHERE ` + w + ` AND npi IS NOT NULL AND program_year = ? GROUP BY npi, company`
+	// One pass over both years with conditional sums (ct = year, pt = year-1),
+	// ranked and limited before the recipients join.
+	cy, py := itoa(year), itoa(year-1)
+	pairs := `SELECT npi, company, SUM(CASE WHEN program_year = ` + cy + ` THEN amount END) ct, SUM(CASE WHEN program_year = ` + py + ` THEN amount END) pt,
+		COUNT(CASE WHEN program_year = ` + cy + ` THEN 1 END) cn, MAX(state) state
+		FROM payments_general p WHERE ` + w + ` AND npi IS NOT NULL AND program_year IN (` + py + `, ` + cy + `) GROUP BY npi, company`
+	var rolled int
+	_ = db.QueryRowContext(ctx, `SELECT EXISTS (SELECT 1 FROM general_pairs)`).Scan(&rolled)
+	if f.minAmount == 0 && rolled == 1 {
+		// general_pairs is the same aggregation precomputed per state; only a
+		// per-payment --min-amount needs the raw rows.
+		pairs = `SELECT npi, company, SUM(CASE WHEN program_year = ` + cy + ` THEN total END) ct, SUM(CASE WHEN program_year = ` + py + ` THEN total END) pt,
+		SUM(CASE WHEN program_year = ` + cy + ` THEN n END) cn, MAX(state) state
+		FROM general_pairs p WHERE ` + w + ` AND program_year IN (` + py + `, ` + cy + `) GROUP BY npi, company`
+	}
 	var q string
-	var args []any
 	if direction > 0 {
-		cond := "pv.t > 0"
+		cond := "pt > 0"
 		if includeNew {
 			cond = "1=1"
 		}
-		q = `WITH cur AS (` + pairs + `), prev AS (` + pairs + `)
-			SELECT c.npi, c.name, c.specialty, c.city, c.state, c.company, ? AS prior_year, ROUND(COALESCE(pv.t,0),2) prior_total, ? AS year, ROUND(c.t,2) year_total,
-			  ROUND(c.t - COALESCE(pv.t,0),2) delta, CASE WHEN COALESCE(pv.t,0) > 0 THEN ROUND(100.0*(c.t - pv.t)/pv.t,1) END pct_change, c.n payments
-			FROM cur c LEFT JOIN prev pv ON pv.npi = c.npi AND pv.company = c.company
-			WHERE ` + cond + ` AND c.t - COALESCE(pv.t,0) >= ? ORDER BY delta DESC LIMIT ?`
+		q = `SELECT g.npi, r.name, r.specialty, r.city, g.state, g.company, ` + py + ` AS prior_year, ROUND(COALESCE(g.pt,0),2) prior_total, ` + cy + ` AS year, ROUND(g.ct,2) year_total,
+			  ROUND(g.ct - COALESCE(g.pt,0),2) delta, CASE WHEN COALESCE(g.pt,0) > 0 THEN ROUND(100.0*(g.ct - g.pt)/g.pt,1) END pct_change, g.cn payments
+			FROM (` + pairs + ` HAVING ct IS NOT NULL AND ` + cond + ` AND ct - COALESCE(pt,0) >= ? ORDER BY ct - COALESCE(pt,0) DESC LIMIT ?) g
+			LEFT JOIN recipients r ON r.recipient_key = g.npi ORDER BY delta DESC`
 	} else {
-		q = `WITH cur AS (` + pairs + `), prev AS (` + pairs + `)
-			SELECT pv.npi, pv.name, pv.specialty, pv.city, pv.state, pv.company, ? AS prior_year, ROUND(pv.t,2) prior_total, ? AS year, ROUND(COALESCE(c.t,0),2) year_total,
-			  ROUND(COALESCE(c.t,0) - pv.t,2) delta, ROUND(100.0*(COALESCE(c.t,0) - pv.t)/pv.t,1) pct_change, CASE WHEN c.t IS NULL THEN 'stopped' ELSE 'reduced' END status
-			FROM prev pv LEFT JOIN cur c ON c.npi = pv.npi AND c.company = pv.company
-			WHERE pv.t - COALESCE(c.t,0) >= ? ORDER BY delta ASC LIMIT ?`
+		q = `SELECT g.npi, r.name, r.specialty, r.city, g.state, g.company, ` + py + ` AS prior_year, ROUND(g.pt,2) prior_total, ` + cy + ` AS year, ROUND(COALESCE(g.ct,0),2) year_total,
+			  ROUND(COALESCE(g.ct,0) - g.pt,2) delta, ROUND(100.0*(COALESCE(g.ct,0) - g.pt)/g.pt,1) pct_change, CASE WHEN g.ct IS NULL THEN 'stopped' ELSE 'reduced' END status
+			FROM (` + pairs + ` HAVING pt IS NOT NULL AND pt - COALESCE(ct,0) >= ? ORDER BY COALESCE(ct,0) - pt ASC LIMIT ?) g
+			LEFT JOIN recipients r ON r.recipient_key = g.npi ORDER BY delta ASC`
 	}
-	args = append(args, a...)
-	args = append(args, year)
-	args = append(args, a...)
-	args = append(args, year-1, year-1, year, minDelta, f.limit)
+	args := append(append([]any{}, a...), minDelta, f.limit)
 	// Both years must have rows inside this scope, or every pair would read
 	// as "stopped" / "new" purely because a year is not synced.
 	for _, y := range []int{year - 1, year} {

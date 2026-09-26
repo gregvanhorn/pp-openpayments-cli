@@ -174,7 +174,7 @@ Quality Scorecard: openpayments
 
 Sample Output Probe (live command sample)
   Binary refresh: rebuilt (staged binary was older than Go sources)
-  Passed: 12/12  (100% pass rate, 4 skipped)
+  Passed: 11/11  (100% pass rate, 5 skipped)
 
 Gaps:
   - MCP: 9 tools (9 public, 0 auth-required) — readiness: full
@@ -182,12 +182,12 @@ Gaps:
 Shipcheck Summary
 =================
   LEG               RESULT  EXIT      ELAPSED
-  verify            PASS    0         7.471s
-  validate-narrative  PASS    0         161ms
-  dogfood           PASS    0         3.708s
-  workflow-verify   PASS    0         21ms
-  apify-audit       PASS    0         46ms
-  verify-skill      PASS    0         9.076s
-  scorecard         PASS    0         5.078s
+  verify            PASS    0         6.934s
+  validate-narrative  PASS    0         191ms
+  dogfood           PASS    0         3.598s
+  workflow-verify   PASS    0         23ms
+  apify-audit       PASS    0         38ms
+  verify-skill      PASS    0         8.583s
+  scorecard         PASS    0         5.017s
 
 Verdict: PASS (7/7 legs passed)

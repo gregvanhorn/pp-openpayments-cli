@@ -50,7 +50,11 @@ NOT use it for all-nature dollar leaderboards; use 'top' instead.`,
 			if physiciansOnly {
 				w += " AND p.recipient_type LIKE '%Physician' AND p.recipient_type NOT LIKE '%Non-Physician%'"
 			}
-			q := `SELECT npi, MAX(recipient_name) name, MAX(specialty) specialty, MAX(city) city, MAX(state) state,
+			// Aggregate on covered columns (ix_gen_cover); name/specialty/city
+			// come from the derived recipients table.
+			q := `SELECT g.npi, r.name, r.specialty, r.city, g.state, g.speaking_consulting_total, g.consulting_total, g.speaking_total,
+				g.companies, g.years_active, g.all_general_total, g.first_year, g.last_year FROM (
+				SELECT npi, MAX(state) state,
 				ROUND(SUM(CASE WHEN ` + kolNatureSQL + ` THEN amount ELSE 0 END),2) speaking_consulting_total,
 				ROUND(SUM(CASE WHEN nature = 'Consulting Fee' THEN amount ELSE 0 END),2) consulting_total,
 				ROUND(SUM(CASE WHEN nature LIKE 'Compensation for%' OR nature = 'Honoraria' THEN amount ELSE 0 END),2) speaking_total,
@@ -58,7 +62,8 @@ NOT use it for all-nature dollar leaderboards; use 'top' instead.`,
 				COUNT(DISTINCT CASE WHEN ` + kolNatureSQL + ` THEN program_year END) years_active,
 				ROUND(SUM(amount),2) all_general_total, MIN(program_year) first_year, MAX(program_year) last_year
 				FROM payments_general p WHERE ` + w + ` AND npi IS NOT NULL GROUP BY npi
-				HAVING speaking_consulting_total > 0 ORDER BY ` + order + ` DESC, speaking_consulting_total DESC LIMIT ?`
+				HAVING speaking_consulting_total > 0 ORDER BY ` + order + ` DESC, speaking_consulting_total DESC LIMIT ?) g
+				LEFT JOIN recipients r ON r.recipient_key = g.npi ORDER BY g.` + order + ` DESC, g.speaking_consulting_total DESC`
 			return runLocal(ctx, cmd, flags, db, q, append(a, f.limit)...)
 		},
 	}

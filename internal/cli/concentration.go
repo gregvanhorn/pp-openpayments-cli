@@ -146,7 +146,7 @@ func localConcentration(ctx context.Context, db *sql.DB, by, w string, a []any) 
 	from := "payments_general p"
 	amount := "p.amount"
 	if by == "product" {
-		from += " JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year"
+		from += " CROSS JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year"
 		// Split each payment evenly across its product slots so shares sum to 100%.
 		amount = "p.amount / (SELECT COUNT(*) FROM products x WHERE x.payment_type='general' AND x.record_id=p.record_id AND x.program_year=p.program_year)"
 	}

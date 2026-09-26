@@ -87,7 +87,7 @@ per-company tenure timeline; use 'relationships' instead.`,
 				{"by_year", `SELECT program_year, COUNT(*) payments, SUM(amount) total, COUNT(DISTINCT company) companies, MAX(dataset_modified) dataset_modified FROM payments_general p WHERE ` + w + ` GROUP BY program_year ORDER BY program_year`},
 				{"by_company", `SELECT company, COUNT(*) payments, SUM(amount) total, MIN(program_year) first_year, MAX(program_year) last_year FROM payments_general p WHERE ` + w + ` GROUP BY company ORDER BY total DESC LIMIT 25`},
 				{"by_nature", `SELECT nature, COUNT(*) payments, SUM(amount) total FROM payments_general p WHERE ` + w + ` GROUP BY nature ORDER BY total DESC`},
-				{"by_product", `SELECT MAX(name) product, MAX(kind) kind, MAX(category) category, COUNT(*) payments, SUM(amount) total FROM (SELECT p.record_id, p.program_year, MAX(p.amount) amount, LOWER(pr.name) pkey, MAX(pr.name) name, MAX(pr.kind) kind, MAX(pr.category) category FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` AND pr.name IS NOT NULL GROUP BY p.record_id, p.program_year, pkey) GROUP BY pkey ORDER BY total DESC LIMIT 25`},
+				{"by_product", `SELECT MAX(name) product, MAX(kind) kind, MAX(category) category, COUNT(*) payments, SUM(amount) total FROM (SELECT p.record_id, p.program_year, MAX(p.amount) amount, LOWER(pr.name) pkey, MAX(pr.name) name, MAX(pr.kind) kind, MAX(pr.category) category FROM payments_general p CROSS JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` AND pr.name IS NOT NULL GROUP BY p.record_id, p.program_year, pkey) GROUP BY pkey ORDER BY total DESC LIMIT 25`},
 				{"research_studies", `SELECT nct_id, MAX(name_of_study) name_of_study, company, COUNT(*) payments, SUM(amount) total, MIN(program_year) first_year, MAX(program_year) last_year FROM payments_research p WHERE ` + w + ` GROUP BY nct_id, company ORDER BY total DESC LIMIT 50`},
 			}
 			for _, s := range sections {
@@ -177,7 +177,7 @@ compare two companies' recipients; use 'overlap' instead.`,
 				{"by_specialty", `SELECT specialty, COUNT(DISTINCT npi) recipients, SUM(amount) total FROM payments_general p WHERE ` + w + ` AND specialty IS NOT NULL GROUP BY specialty ORDER BY total DESC LIMIT 15`},
 				{"by_state", `SELECT state, COUNT(DISTINCT npi) recipients, SUM(amount) total FROM payments_general p WHERE ` + w + ` GROUP BY state ORDER BY total DESC LIMIT 15`},
 				{"by_nature", `SELECT nature, COUNT(*) payments, SUM(amount) total FROM payments_general p WHERE ` + w + ` GROUP BY nature ORDER BY total DESC`},
-				{"by_product", `SELECT MAX(name) product, MAX(kind) kind, COUNT(*) payments, SUM(amount) total FROM (SELECT p.record_id, p.program_year, MAX(p.amount) amount, LOWER(pr.name) pkey, MAX(pr.name) name, MAX(pr.kind) kind FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` AND pr.name IS NOT NULL GROUP BY p.record_id, p.program_year, pkey) GROUP BY pkey ORDER BY total DESC LIMIT 15`},
+				{"by_product", `SELECT MAX(name) product, MAX(kind) kind, COUNT(*) payments, SUM(amount) total FROM (SELECT p.record_id, p.program_year, MAX(p.amount) amount, LOWER(pr.name) pkey, MAX(pr.name) name, MAX(pr.kind) kind FROM payments_general p CROSS JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` AND pr.name IS NOT NULL GROUP BY p.record_id, p.program_year, pkey) GROUP BY pkey ORDER BY total DESC LIMIT 15`},
 				{"research_by_year", `SELECT program_year, COUNT(*) payments, COUNT(DISTINCT nct_id) studies, SUM(amount) total FROM payments_research p WHERE ` + w + ` GROUP BY program_year ORDER BY program_year`},
 			}
 			for _, s := range sections {
@@ -237,8 +237,12 @@ use it for radius questions around a ZIP; use 'near' instead.`,
 			var q string
 			switch by {
 			case "recipient":
-				q = `SELECT npi, MAX(recipient_name) name, MAX(specialty) specialty, MAX(city) city, MAX(state) state, COUNT(*) payments, COUNT(DISTINCT company) companies, SUM(` + amount + `) total, MIN(program_year) first_year, MAX(program_year) last_year, MAX(dataset_modified) dataset_modified
-					FROM ` + table + ` p WHERE ` + w + ` AND npi IS NOT NULL GROUP BY npi ORDER BY total DESC LIMIT ?`
+				// Aggregate on covered columns only (ix_gen_cover), then take
+				// name/specialty/city from the derived recipients table.
+				q = `SELECT g.npi, r.name, r.specialty, r.city, g.state, g.payments, g.companies, g.total, g.first_year, g.last_year, g.dataset_modified FROM (
+					SELECT npi, MAX(state) state, COUNT(*) payments, COUNT(DISTINCT company) companies, SUM(` + amount + `) total, MIN(program_year) first_year, MAX(program_year) last_year, MAX(dataset_modified) dataset_modified
+					FROM ` + table + ` p WHERE ` + w + ` AND npi IS NOT NULL GROUP BY npi ORDER BY total DESC LIMIT ?) g
+					LEFT JOIN recipients r ON r.recipient_key = g.npi ORDER BY g.total DESC`
 			case "company":
 				q = `SELECT company, COUNT(*) payments, COUNT(DISTINCT npi) recipients, SUM(` + amount + `) total, MIN(program_year) first_year, MAX(program_year) last_year, MAX(dataset_modified) dataset_modified
 					FROM ` + table + ` p WHERE ` + w + ` GROUP BY company ORDER BY total DESC LIMIT ?`
@@ -250,7 +254,7 @@ use it for radius questions around a ZIP; use 'near' instead.`,
 				// slots of one payment is counted once.
 				q = `SELECT MAX(name) product, MAX(kind) kind, MAX(category) category, COUNT(*) payments, COUNT(DISTINCT npi) recipients, SUM(amount) total, MAX(dataset_modified) dataset_modified FROM (
 					SELECT p.record_id, p.program_year, MAX(p.npi) npi, MAX(p.amount) amount, MAX(p.dataset_modified) dataset_modified, LOWER(pr.name) pkey, MAX(pr.name) name, MAX(pr.kind) kind, MAX(pr.category) category
-					FROM ` + table + ` p JOIN products pr ON pr.payment_type='` + typ + `' AND pr.record_id=p.record_id AND pr.program_year=p.program_year
+					FROM ` + table + ` p CROSS JOIN products pr ON pr.payment_type='` + typ + `' AND pr.record_id=p.record_id AND pr.program_year=p.program_year
 					WHERE ` + w + ` AND pr.name IS NOT NULL GROUP BY p.record_id, p.program_year, pkey) GROUP BY pkey ORDER BY total DESC LIMIT ?`
 			case "state":
 				q = `SELECT state, COUNT(*) payments, COUNT(DISTINCT npi) recipients, SUM(` + amount + `) total FROM ` + table + ` p WHERE ` + w + ` GROUP BY state ORDER BY total DESC LIMIT ?`
@@ -306,7 +310,7 @@ trial; use 'investigators' instead.`,
 				return err
 			}
 			if st := upperList(splitCSVFlag(f.states)); len(st) > 0 {
-				w += ` AND (p.state IN (` + qmarks(len(st)) + `) OR EXISTS (SELECT 1 FROM research_investigators i WHERE i.record_id=p.record_id AND i.program_year=p.program_year AND i.state IN (` + qmarks(len(st)) + `)))`
+				w += ` AND (p.state IN (` + qmarks(len(st)) + `) OR (p.record_id, p.program_year) IN (SELECT i.record_id, i.program_year FROM research_investigators i WHERE i.state IN (` + qmarks(len(st)) + `)))`
 				for i := 0; i < 2; i++ {
 					for _, s := range st {
 						a = append(a, s)
@@ -316,7 +320,7 @@ trial; use 'investigators' instead.`,
 			if sp := splitCSVFlag(f.specialties); len(sp) > 0 {
 				var ors []string
 				for _, s := range sp {
-					ors = append(ors, `LOWER(p.specialties) LIKE ? OR EXISTS (SELECT 1 FROM research_investigators i WHERE i.record_id=p.record_id AND i.program_year=p.program_year AND LOWER(i.specialty) LIKE ?)`)
+					ors = append(ors, `LOWER(p.specialties) LIKE ? OR (p.record_id, p.program_year) IN (SELECT i.record_id, i.program_year FROM research_investigators i WHERE LOWER(i.specialty) LIKE ?)`)
 					a = append(a, "%"+strings.ToLower(s)+"%", "%"+strings.ToLower(s)+"%")
 				}
 				w += " AND (" + strings.Join(ors, " OR ") + ")"

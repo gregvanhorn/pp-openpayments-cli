@@ -46,8 +46,14 @@ func (f opFilter) where(alias, specCol, amountCol string) (string, []any, error)
 		}
 		return alias + "." + c
 	}
+	// A company filter is far more selective than state/year; the unary +
+	// keeps SQLite from choosing the state/year index over the company one.
+	steer := ""
+	if f.companies != "" {
+		steer = "+"
+	}
 	if s := upperList(splitCSVFlag(f.states)); len(s) > 0 {
-		parts = append(parts, col("state")+" IN ("+qmarks(len(s))+")")
+		parts = append(parts, steer+col("state")+" IN ("+qmarks(len(s))+")")
 		for _, x := range s {
 			args = append(args, x)
 		}
@@ -55,7 +61,7 @@ func (f opFilter) where(alias, specCol, amountCol string) (string, []any, error)
 	if s := splitCSVFlag(f.specialties); len(s) > 0 {
 		var ors []string
 		for _, x := range s {
-			ors = append(ors, "LOWER("+col(specCol)+") LIKE ?")
+			ors = append(ors, col(specCol)+" LIKE ?")
 			args = append(args, "%"+strings.ToLower(x)+"%")
 		}
 		parts = append(parts, "("+strings.Join(ors, " OR ")+")")
@@ -63,7 +69,9 @@ func (f opFilter) where(alias, specCol, amountCol string) (string, []any, error)
 	if s := splitCSVFlag(f.companies); len(s) > 0 {
 		var ors []string
 		for _, x := range s {
-			ors = append(ors, "LOWER("+col("company")+") LIKE ?")
+			// Resolve the pattern against the small company_names table so the
+			// payment filter is an indexed IN over exact names.
+			ors = append(ors, col("company")+" IN (SELECT company FROM company_names WHERE company LIKE ?)")
 			args = append(args, "%"+strings.ToLower(x)+"%")
 		}
 		parts = append(parts, "("+strings.Join(ors, " OR ")+")")
@@ -73,7 +81,7 @@ func (f opFilter) where(alias, specCol, amountCol string) (string, []any, error)
 		if err != nil {
 			return "", nil, usageErr(err)
 		}
-		parts = append(parts, col("program_year")+" IN ("+qmarks(len(ys))+")")
+		parts = append(parts, steer+col("program_year")+" IN ("+qmarks(len(ys))+")")
 		for _, y := range ys {
 			args = append(args, y)
 		}

@@ -85,7 +85,7 @@ side-by-side; use 'compare' instead.`,
 					row["found"] = true
 				}
 				var research float64
-				_ = db.QueryRowContext(ctx, `SELECT COALESCE(SUM(amount),0) FROM payments_research p WHERE (p.npi = ? OR EXISTS (SELECT 1 FROM research_investigators i WHERE i.record_id=p.record_id AND i.program_year=p.program_year AND i.npi = ?)) AND `+w, append([]any{npi, npi}, a...)...).Scan(&research)
+				_ = db.QueryRowContext(ctx, `SELECT COALESCE(SUM(amount),0) FROM payments_research p WHERE (p.npi = ? OR (p.record_id, p.program_year) IN (SELECT i.record_id, i.program_year FROM research_investigators i WHERE i.npi = ?)) AND `+w, append([]any{npi, npi}, a...)...).Scan(&research)
 				row["research_total"] = roundCents(research)
 				if research > 0 {
 					row["found"] = true

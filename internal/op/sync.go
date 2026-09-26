@@ -749,6 +749,17 @@ func RebuildDerived(db *sql.DB) error {
 		   UNION ALL SELECT company_id, company, company_state, company_country FROM payments_research
 		   UNION ALL SELECT company_id, company, company_state, company_country FROM payments_ownership
 		 ) WHERE company_id IS NOT NULL GROUP BY company_id`,
+		`DELETE FROM general_pairs`,
+		`INSERT OR REPLACE INTO general_pairs (state, program_year, npi, company, specialties, total, n)
+		 SELECT state, program_year, npi, company, MAX(specialties), SUM(amount), COUNT(*) FROM payments_general
+		 WHERE npi IS NOT NULL GROUP BY state, program_year, npi, company`,
+		`DELETE FROM company_names`,
+		`INSERT OR REPLACE INTO company_names (company, company_id)
+		 SELECT company, MAX(company_id) FROM (
+		   SELECT DISTINCT company, company_id FROM payments_general
+		   UNION ALL SELECT DISTINCT company, company_id FROM payments_research
+		   UNION ALL SELECT DISTINCT company, company_id FROM payments_ownership
+		 ) WHERE company IS NOT NULL GROUP BY company`,
 		`DELETE FROM recipients_fts`,
 		`INSERT INTO recipients_fts (recipient_key, name, specialty, city, state) SELECT recipient_key, name, specialty, city, state FROM recipients`,
 		`DELETE FROM companies_fts`,
