@@ -1,0 +1,55 @@
+version: 2
+project_name: openpayments-pp-cli
+changelog:
+  disable: true
+builds:
+  - id: openpayments-pp-cli
+    main: ./cmd/openpayments-pp-cli
+    binary: openpayments-pp-cli
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X openpayments-pp-cli/internal/cli.version={{ .Version }}
+    targets:
+      - darwin_amd64
+      - darwin_arm64
+      - linux_amd64
+      - linux_arm64
+      - windows_amd64
+      - windows_arm64
+  - id: openpayments-pp-mcp
+    main: ./cmd/openpayments-pp-mcp
+    binary: openpayments-pp-mcp
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+    targets:
+      - darwin_amd64
+      - darwin_arm64
+      - linux_amd64
+      - linux_arm64
+      - windows_amd64
+      - windows_arm64
+archives:
+  - formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+checksum:
+  name_template: checksums.txt
+brews:
+  - name: openpayments-pp-cli
+    repository:
+      owner: gregvanhorn
+      name: homebrew-tap
+    homepage: "https://github.com/gregvanhorn/openpayments-pp-cli"
+    description: "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data."
+    install: |
+      bin.install "openpayments-pp-cli"
+      bin.install "openpayments-pp-mcp"

@@ -1,0 +1,219 @@
+
+=== verify ===
+warning: GET "/api/1/search": response-schema ID fallback chose display field "name"; add x-resource-id if the API exposes a stable identifier
+warning: GET "/api/1/search/facets": response-schema ID fallback chose display field "name"; add x-resource-id if the API exposes a stable identifier
+Runtime Verification: /root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/working/openpayments-pp-cli/openpayments-pp-cli
+Mode: mock
+
+COMMAND                        KIND         HELP   DRY-RUN  EXEC     SCORE
+resource-path:tail             static       PASS   PASS     PASS     3/3
+resource-path:export           static       PASS   PASS     PASS     3/3
+agent-context                  write        PASS   PASS     PASS     3/3
+analytics                      data-layer   PASS   PASS     PASS     3/3
+api                            local        PASS   PASS     PASS     3/3
+ask                            write        PASS   PASS     PASS     3/3
+catalog                        read         PASS   PASS     PASS     3/3
+changed                        write        PASS   PASS     PASS     3/3
+company                        write        PASS   PASS     PASS     3/3
+compare                        write        PASS   PASS     FAIL     2/3
+concentration                  write        PASS   PASS     FAIL     2/3
+cooling                        write        PASS   PASS     FAIL     2/3
+datasets                       write        PASS   PASS     PASS     3/3
+datastore                      read         PASS   PASS     PASS     3/3
+doctor                         local        PASS   PASS     PASS     3/3
+dossier                        write        PASS   PASS     FAIL     2/3
+download                       write        PASS   PASS     FAIL     2/3
+export                         data-layer   PASS   PASS     PASS     3/3
+feedback                       write        PASS   PASS     PASS     3/3
+hospital                       write        PASS   PASS     PASS     3/3
+investigators                  write        PASS   PASS     FAIL     2/3
+kol                            write        PASS   PASS     PASS     3/3
+learnings                      read         PASS   PASS     PASS     3/3
+metastore                      read         PASS   PASS     PASS     3/3
+nature                         write        PASS   PASS     PASS     3/3
+near                           write        PASS   PASS     FAIL     2/3
+new-recipients                 write        PASS   PASS     FAIL     2/3
+overlap                        write        PASS   PASS     PASS     3/3
+ownership                      write        PASS   PASS     PASS     3/3
+playbook                       write        PASS   PASS     FAIL     2/3
+product                        write        PASS   PASS     PASS     3/3
+profile                        write        PASS   PASS     FAIL     2/3
+query                          read         PASS   PASS     FAIL     2/3
+recall                         read         PASS   PASS     PASS     3/3
+relationships                  write        PASS   PASS     FAIL     2/3
+research                       write        PASS   PASS     PASS     3/3
+research-sites                 write        PASS   PASS     PASS     3/3
+rising                         write        PASS   PASS     FAIL     2/3
+roster                         write        PASS   PASS     FAIL     2/3
+schema                         write        PASS   PASS     PASS     3/3
+search                         data-layer   PASS   PASS     PASS     3/3
+sql                            data-layer   PASS   PASS     PASS     3/3
+sync                           data-layer   PASS   PASS     PASS     3/3
+tail                           data-layer   PASS   PASS     PASS     3/3
+teach                          write        PASS   PASS     PASS     3/3
+teach-lookup                   write        PASS   PASS     PASS     3/3
+teach-pattern                  write        PASS   PASS     PASS     3/3
+teach-playbook                 write        PASS   PASS     PASS     3/3
+top                            write        PASS   PASS     PASS     3/3
+trials                         write        PASS   PASS     FAIL     2/3
+which                          read         PASS   PASS     PASS     3/3
+workflow                       write        PASS   PASS     FAIL     2/3
+
+Path-Param Probes (nested commands with <positional> args):
+  PASS datastore datasetindex-query-get
+  PASS datastore resource-query-get
+  PASS learnings confirm
+  PASS learnings forget
+  PASS learnings reject
+  PASS metastore dataset-get-item
+  PASS metastore get-all
+  PASS metastore get-schema
+  PASS profile delete
+  PASS profile save
+  PASS profile show
+  PASS profile use
+  PASS trials sponsor
+
+Data Pipeline: PASS: sync completed (sql unavailable, table validation skipped)
+Pass Rate: 100% (65/65 passed, 0 critical)
+Verdict: PASS
+
+=== validate-narrative ===
+MISSING [quickstart]: openpayments-pp-cli datasets list --year 2024 → datasets list
+FAILED [quickstart]: openpayments-pp-cli sync --years 2023-2025 --types general,research,ownership --states PA,NJ → full example failed: /root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/working/openpayments-pp-cli/build/stage/bin/openpayments-pp-cli sync --years 2023-2025 --types general,research,ownership --states PA,NJ --dry-run: exit status 2: Error: unknown flag: --years
+hint: did you mean --yes?
+MISSING [quickstart]: openpayments-pp-cli top --by recipient --state PA --year 2024 --limit 20 → top
+MISSING [recipes]: openpayments-pp-cli top --by recipient --state PA --year 2024 --limit 20 --agent --select name,npi,total → top
+MISSING [recipes]: openpayments-pp-cli dossier 1234567890 --agent → dossier 1234567890
+MISSING [recipes]: openpayments-pp-cli sql "SELECT company, SUM(amount) total FROM payments_general WHERE state='PA' GROUP BY company ORDER BY total DESC LIMIT 10" --agent → sql
+DONE: 4 ok, 5 missing, 0 empty-words, 1 failed-examples, 0 unsupported
+narrative validation failed
+
+=== dogfood ===
+dogfood: using spec /root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/working/openpayments-pp-cli/spec.json (bundled)
+dogfood: caller --spec=/root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/research/openpayments-readonly-spec.json overridden by bundled /root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/working/openpayments-pp-cli/spec.json
+warning: GET "/api/1/search": response-schema ID fallback chose display field "name"; add x-resource-id if the API exposes a stable identifier
+warning: GET "/api/1/search/facets": response-schema ID fallback chose display field "name"; add x-resource-id if the API exposes a stable identifier
+Dogfood Report: openpayments-pp-cli
+================================
+
+Path Validity:     2/2 valid (PASS)
+
+Auth Protocol:     MATCH
+  Generated: Uses "unknown" prefix
+  Detail: no bot/bearer/basic scheme detected
+
+OAuth Scope Cover: 0/0 endpoints covered (SKIP)
+  Detail: no OAuth-scoped endpoints in spec
+
+Dead Flags:        0 dead (PASS)
+
+Dead Functions:    3 dead (WARN)
+  - handleBinaryResponseDelivery (defined, never called)
+  - readSecretFromStdin (defined, never called)
+  - successfulNoop (defined, never called)
+
+Data Pipeline:     PARTIAL
+  Sync: calls domain-specific Upsert methods (GOOD)
+  Search: uses generic Search only or direct SQL
+  Domain tables: 4
+
+Examples:          10/10 commands have examples (PASS)
+
+Novel Features:    16/16 survived (PASS)
+
+MCP Surface:       PASS (MCP surface mirrors the Cobra tree at runtime)
+
+Verdict: WARN
+  - 3 dead helper functions found
+
+=== workflow-verify ===
+Workflow Verification: openpayments-pp-cli
+================================
+
+Overall Verdict: workflow-pass
+  - no workflow manifest found, skipping
+
+=== apify-audit ===
+Apify Actor Audit
+=================
+
+No Apify actor references found.
+
+Verdict: pass
+  - no Apify actor references found, skipping
+
+=== verify-skill ===
+=== openpayments-pp-cli ===
+  ✘ 3 error(s), 0 likely false-positive(s)
+    [flag-commands] openpayments-pp-cli sync: --years is declared elsewhere but not on sync
+      evidence: README.md
+    [flag-commands] openpayments-pp-cli sync: --types is declared elsewhere but not on sync
+      evidence: README.md
+    [flag-commands] openpayments-pp-cli sync: --states is declared elsewhere but not on sync
+      evidence: README.md
+  ✓ canonical-sections passed
+
+=== scorecard ===
+Quality Scorecard: openpayments
+
+  Output Modes         10/10
+  Auth                 10/10
+  Error Handling       8/10
+  Terminal UX          10/10
+  README               10/10
+  Doctor               10/10
+  Agent Native         10/10
+  MCP Quality          10/10
+  MCP Desc Quality     10/10
+  MCP Token Efficiency 10/10
+  MCP Remote Transport 10/10
+  MCP Tool Design      7/10
+  MCP Surface Strategy N/A
+  Local Cache          10/10
+  Cache Freshness      5/10
+  Breadth              10/10
+  Vision               10/10
+  Workflows            10/10
+  Insight              7/10
+  Agent Workflow       9/10
+
+  Domain Correctness
+  Path Validity           10/10
+  Auth Protocol           N/A
+  Data Pipeline Integrity 7/10
+  Sync Correctness        10/10
+  Live API Verification   N/A
+  Type Fidelity           5/5
+  Dead Code               2/5
+
+  Total: 88/100 - Grade A
+  Note: omitted from denominator: mcp_surface_strategy, auth_protocol, live_api_verification
+
+Sample Output Probe (live command sample)
+  Binary refresh: rebuilt (staged binary was older than Go sources)
+  Passed: 8/16  (50% pass rate, 0 skipped)
+  Failures:
+    - KOL ranking: exit 3: Error: no local data yet; run 'openpayments-pp-cli sync --years 2024 --states PA' first
+    - New recipients: exit 3: Error: no local data yet; run 'openpayments-pp-cli sync --years 2024 --states PA' first
+    - Rising relationships: exit 3: Error: no local data yet; run 'openpayments-pp-cli sync --years 2024 --states PA' first
+    - Research-site scouting: exit 3: Error: no local data yet; run 'openpayments-pp-cli sync --years 2024 --states PA' first
+    - Recipient compare: exit 3: Error: no local data yet; run 'openpayments-pp-cli sync --years 2024 --states PA' first
+    - Relationship timeline: exit 3: hint: local store has not been synced yet. Run 'openpayments-pp-cli sync' before trusting local results.
+Error: no synced recipient matches "1234567890"; sync their scope (e.g. 'sync --years 2019-2025 --npi <NPI>')
+    - Trial investigators: exit 3: Error: no local data yet; run 'openpayments-pp-cli sync --years 2024 --states PA' first
+    - Spend concentration: exit 3: hint: local store has not been synced yet. Run 'openpayments-pp-cli sync' before trusting local results.
+Error: no synced payments for "Stryker Corporation" in this scope
+
+Shipcheck Summary
+=================
+  LEG               RESULT  EXIT      ELAPSED
+  verify            PASS    0         23.371s
+  validate-narrative  FAIL    1         153ms
+  dogfood           PASS    0         3.629s
+  workflow-verify   PASS    0         24ms
+  apify-audit       PASS    0         35ms
+  verify-skill      FAIL    1         8.36s
+  scorecard         PASS    0         3.527s
+
+Verdict: FAIL (2/7 legs failed)

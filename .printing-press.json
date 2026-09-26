@@ -1,0 +1,208 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-26T15:27:58.909953723Z",
+  "printing_press_version": "4.32.5",
+  "api_name": "openpayments",
+  "display_name": "CMS Open Payments",
+  "cli_name": "openpayments-pp-cli",
+  "creator": {
+    "handle": "gregvanhorn",
+    "name": "Greg Van Horn"
+  },
+  "owner": "gregvanhorn",
+  "printer": "gregvanhorn",
+  "printer_name": "Greg Van Horn",
+  "spec_url": "https://openpaymentsdata.cms.gov/api/1",
+  "spec_path": "spec.json",
+  "spec_format": "openapi3",
+  "spec_source": "official",
+  "spec_checksum": "sha256:f54b5fa5f871d7fa2fd50ff6a9297b865cd5f0142e65daeaa4556e95a9ac6be1",
+  "run_id": "20260926-151442-beecf015",
+  "category": "health",
+  "description": "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data.",
+  "mcp_binary": "openpayments-pp-mcp",
+  "mcp_tool_count": 9,
+  "mcp_public_tool_count": 9,
+  "mcp_ready": "full",
+  "api_version": "v1",
+  "auth_type": "none",
+  "novel_features": [
+    {
+      "name": "KOL ranking",
+      "command": "kol",
+      "description": "Rank physicians in a specialty and region by speaking and consulting dollars, number of paying companies and years active."
+    },
+    {
+      "name": "New recipients",
+      "command": "new-recipients",
+      "description": "See which clinicians received industry payments this year for the first time, compared against every earlier synced year."
+    },
+    {
+      "name": "Rising relationships",
+      "command": "rising",
+      "description": "Find recipient-company pairs whose dollars grew the most year over year."
+    },
+    {
+      "name": "Research-site scouting",
+      "command": "research-sites",
+      "description": "Rank sites and principal investigators by research dollars, trials and sponsors for a specialty and region."
+    },
+    {
+      "name": "Trial gaps",
+      "command": "trials gaps",
+      "description": "List recruiting trials in your region whose sponsor pays no local principal investigator. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct)."
+    },
+    {
+      "name": "Recipient compare",
+      "command": "compare",
+      "description": "Put two or more clinicians side by side by year, company and nature of payment."
+    },
+    {
+      "name": "Relationship timeline",
+      "command": "relationships",
+      "description": "Show every company that paid a clinician with first year, last year, total and trend."
+    },
+    {
+      "name": "Trial investigators",
+      "command": "investigators",
+      "description": "List every principal investigator paid for one ClinicalTrials.gov study, deduplicated."
+    },
+    {
+      "name": "Company overlap",
+      "command": "overlap",
+      "description": "See which recipients two companies both pay, and who only one pays."
+    },
+    {
+      "name": "Batch roster check",
+      "command": "roster",
+      "description": "Summarize payments for a whole list of NPIs in one pass, including disputed counts."
+    },
+    {
+      "name": "Agent question helper",
+      "command": "ask",
+      "description": "Print the local schema, a plain-word glossary and worked SQL examples for any question."
+    },
+    {
+      "name": "Spend concentration",
+      "command": "concentration",
+      "description": "Measure how concentrated a company's spend is: top-10 share, HHI and recipients to reach 50% and 80%."
+    },
+    {
+      "name": "Radius search",
+      "command": "near",
+      "description": "Find paid clinicians within N miles of a ZIP code (ZIP-centroid distance)."
+    },
+    {
+      "name": "Change detection",
+      "command": "changed",
+      "description": "See records added, corrected or removed by the latest re-sync (needs at least two syncs of the same scope)."
+    },
+    {
+      "name": "Cooling relationships",
+      "command": "cooling",
+      "description": "Find recipient-company pairs whose dollars fell or stopped year over year."
+    },
+    {
+      "name": "Sponsor trial map",
+      "command": "trials sponsor",
+      "description": "Show a sponsor's ClinicalTrials.gov trials with the sites it already pays. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct)."
+    }
+  ],
+  "novel_features_built": [
+    {
+      "name": "KOL ranking",
+      "command": "kol",
+      "description": "Rank physicians in a specialty and region by speaking and consulting dollars, number of paying companies and years active."
+    },
+    {
+      "name": "New recipients",
+      "command": "new-recipients",
+      "description": "See which clinicians received industry payments this year for the first time, compared against every earlier synced year."
+    },
+    {
+      "name": "Rising relationships",
+      "command": "rising",
+      "description": "Find recipient-company pairs whose dollars grew the most year over year."
+    },
+    {
+      "name": "Research-site scouting",
+      "command": "research-sites",
+      "description": "Rank sites and principal investigators by research dollars, trials and sponsors for a specialty and region."
+    },
+    {
+      "name": "Trial gaps",
+      "command": "trials gaps",
+      "description": "List recruiting trials in your region whose sponsor pays no local principal investigator. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct)."
+    },
+    {
+      "name": "Recipient compare",
+      "command": "compare",
+      "description": "Put two or more clinicians side by side by year, company and nature of payment."
+    },
+    {
+      "name": "Relationship timeline",
+      "command": "relationships",
+      "description": "Show every company that paid a clinician with first year, last year, total and trend."
+    },
+    {
+      "name": "Trial investigators",
+      "command": "investigators",
+      "description": "List every principal investigator paid for one ClinicalTrials.gov study, deduplicated."
+    },
+    {
+      "name": "Company overlap",
+      "command": "overlap",
+      "description": "See which recipients two companies both pay, and who only one pays."
+    },
+    {
+      "name": "Batch roster check",
+      "command": "roster",
+      "description": "Summarize payments for a whole list of NPIs in one pass, including disputed counts."
+    },
+    {
+      "name": "Agent question helper",
+      "command": "ask",
+      "description": "Print the local schema, a plain-word glossary and worked SQL examples for any question."
+    },
+    {
+      "name": "Spend concentration",
+      "command": "concentration",
+      "description": "Measure how concentrated a company's spend is: top-10 share, HHI and recipients to reach 50% and 80%."
+    },
+    {
+      "name": "Radius search",
+      "command": "near",
+      "description": "Find paid clinicians within N miles of a ZIP code (ZIP-centroid distance)."
+    },
+    {
+      "name": "Change detection",
+      "command": "changed",
+      "description": "See records added, corrected or removed by the latest re-sync (needs at least two syncs of the same scope)."
+    },
+    {
+      "name": "Cooling relationships",
+      "command": "cooling",
+      "description": "Find recipient-company pairs whose dollars fell or stopped year over year."
+    },
+    {
+      "name": "Sponsor trial map",
+      "command": "trials sponsor",
+      "description": "Show a sponsor's ClinicalTrials.gov trials with the sites it already pays. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct)."
+    }
+  ],
+  "verify": {
+    "mode": "mock",
+    "pass_rate": 100,
+    "passed": 65,
+    "total": 65,
+    "data_pipeline": true,
+    "verdict": "PASS"
+  },
+  "scorecard": {
+    "steinberger": {
+      "percentage": 93,
+      "grade": "A",
+      "total": 93
+    }
+  }
+}

@@ -1,0 +1,309 @@
+{
+  "api_name": "openpayments",
+  "base_url": "https://openpaymentsdata.cms.gov",
+  "description": "A local, exact, offline map of who industry pays: every CMS Open Payments dataset, plus KOL rankings, new and rising relationships, and trial-site gaps computed from synced data.",
+  "mcp_ready": "full",
+  "http_transport": "standard",
+  "auth": {
+    "type": "none"
+  },
+  "required_headers": [],
+  "tools": [
+    {
+      "name": "catalog_search",
+      "description": "Search the DKAN catalog. Optional: fulltext, page (default: 1), page-size (default: 10) (plus 6 more). Returns array of CatalogSearchItem.",
+      "method": "GET",
+      "path": "/api/1/search",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "fulltext",
+          "type": "string",
+          "location": "query",
+          "description": "Full-text search to run against any metadata fields indexed for fulltext searches."
+        },
+        {
+          "name": "page",
+          "type": "int",
+          "location": "query",
+          "description": "The page of the result set."
+        },
+        {
+          "name": "page-size",
+          "type": "int",
+          "location": "query",
+          "description": "How many results per page."
+        },
+        {
+          "name": "sort",
+          "type": "array",
+          "location": "query",
+          "description": "Which property to sort results on. Available properties: description, keyword, modified, publisher__name, temporal, theme, title, search_api_relevance"
+        },
+        {
+          "name": "sort-order",
+          "type": "array",
+          "location": "query",
+          "description": "Sort results in ascending or descending order. Allowed values: asc, desc"
+        },
+        {
+          "name": "facets",
+          "type": "string",
+          "location": "query",
+          "description": "Request information on facets. Pass a comma-separated list to get specific facets. Pass an empty value or '0' for no facet infrmation. Omit this parameter to get all facet information."
+        },
+        {
+          "name": "publisher__name",
+          "type": "string",
+          "location": "query",
+          "description": "Filter results using publisher__name facet."
+        },
+        {
+          "name": "theme",
+          "type": "string",
+          "location": "query",
+          "description": "Filter results using theme facet."
+        },
+        {
+          "name": "keyword",
+          "type": "string",
+          "location": "query",
+          "description": "Filter results using keyword facet."
+        }
+      ]
+    },
+    {
+      "name": "catalog_search-facets",
+      "description": "Retrieve search facet information. Returns array of CatalogSearchFacetsItem.",
+      "method": "GET",
+      "path": "/api/1/search/facets",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "datastore_datasetindex-query-get",
+      "description": "Simple GET equivalent of a POST query -- see the POST endpoint documentation for full query schema. A few basic parameters are provided here as examples. For more reliable queries, write your query in JSON and then convert to a query string. See [this web tool](https://www.convertonline.io/convert/json-to-query-string) for an example. Required: datasetId, index. Optional: limit (e.g. {'key':'value'}), offset (default: 0) (e.g. {'key':'value'}), count (default: true) (e.g. {'key':'value'}) (plus 5 more). Returns array of DatastoreDatasetindexQueryGetItem.",
+      "method": "GET",
+      "path": "/api/1/datastore/query/{datasetId}/{index}",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "datasetId",
+          "type": "string",
+          "location": "path",
+          "description": "A dataset ID",
+          "required": true
+        },
+        {
+          "name": "index",
+          "type": "string",
+          "location": "path",
+          "description": "The index of a distribution in a dataset's distribution array. For instance, the first distribution in a dataset would have an index of '0,' the second would have '1', etc.",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "int",
+          "location": "query",
+          "description": "Limit"
+        },
+        {
+          "name": "offset",
+          "type": "int",
+          "location": "query",
+          "description": "Offset"
+        },
+        {
+          "name": "count",
+          "type": "bool",
+          "location": "query",
+          "description": "Count"
+        },
+        {
+          "name": "results",
+          "type": "bool",
+          "location": "query",
+          "description": "Results"
+        },
+        {
+          "name": "schema",
+          "type": "bool",
+          "location": "query",
+          "description": "Schema"
+        },
+        {
+          "name": "keys",
+          "type": "bool",
+          "location": "query",
+          "description": "Keys"
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "location": "query",
+          "description": "Format"
+        },
+        {
+          "name": "rowIds",
+          "type": "bool",
+          "location": "query",
+          "description": "Row ids"
+        }
+      ]
+    },
+    {
+      "name": "datastore_resource-query-get",
+      "description": "Simple GET equivalent of a POST query. Note that parameters containing arrays or objects are not yet supported by SwaggerUI. For conditions, sorts, and other complex parameters, write your query in JSON and then convert to a nested query string. See [this web tool](https://www.convertonline.io/convert/json-to-query-string) for an example. Required: distributionId. Optional: limit (e.g. {'key':'value'}), offset (default: 0) (e.g. {'key':'value'}), count (default: true) (e.g. {'key':'value'}) (plus 5 more). Returns array of DatastoreResourceQueryGetItem.",
+      "method": "GET",
+      "path": "/api/1/datastore/query/{distributionId}",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "distributionId",
+          "type": "string",
+          "location": "path",
+          "description": "A distribution ID",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "int",
+          "location": "query",
+          "description": "Limit"
+        },
+        {
+          "name": "offset",
+          "type": "int",
+          "location": "query",
+          "description": "Offset"
+        },
+        {
+          "name": "count",
+          "type": "bool",
+          "location": "query",
+          "description": "Count"
+        },
+        {
+          "name": "results",
+          "type": "bool",
+          "location": "query",
+          "description": "Results"
+        },
+        {
+          "name": "schema",
+          "type": "bool",
+          "location": "query",
+          "description": "Schema"
+        },
+        {
+          "name": "keys",
+          "type": "bool",
+          "location": "query",
+          "description": "Keys"
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "location": "query",
+          "description": "Format"
+        },
+        {
+          "name": "rowIds",
+          "type": "bool",
+          "location": "query",
+          "description": "Row ids"
+        }
+      ]
+    },
+    {
+      "name": "datastore_sql",
+      "description": "Interact with resources in the datastore using an SQL-like syntax. Required: query. Optional: show_db_columns. Returns array of DatastoreSqlItem.",
+      "method": "GET",
+      "path": "/api/1/datastore/sql",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "query",
+          "type": "string",
+          "location": "query",
+          "description": "A SQL-like query. A `SELECT` using the `show_db_columns` parameter will make it easier to build queries against the data as it returns columns without spaces and in some cases, truncated names where the human readable column header is very long. `/api/1/datastore/sql?query=[SELECT * FROM DATASTORE_UUID][LIMIT 1 OFFSET 0];\u0026show_db_columns` You can then build the `SELECT` part of the query. Do not use spaces between its arguments. `/api/1/datastore/sql?query=[SELECT a,b,c, FROM DATASTORE_UUID]` `WHERE` can use any column in the data. `/api/1/datastore/sql?query=[SELECT a,b FROM DATASTORE_UUID][WHERE c = 'CCC'];\u0026show_db_columns` `LIMIT` and `OFFSET` allow you to get more than the 500 record limit, by using successive queries: `/api/1/datastore/sql?query=[SELECT a,b,c FROM DATASTORE_UUID][WHERE d = 'CCC'][LIMIT 500 OFFSET 0];\u0026show_db_columns` `/api/1/datastore/sql?query=[SELECT a,b,c FROM DATASTORE_UUID][WHERE d = 'DDD'][LIMIT 500 OFFSET 500];\u0026show_db_columns` Note: `SELECT`, `WHERE` and `LIMIT...OFFSET` clauses must each be included within brackets `[ ]`.",
+          "required": true
+        },
+        {
+          "name": "show_db_columns",
+          "type": "bool",
+          "location": "query",
+          "description": "Add `\u0026show_db_columns` to return columns without spaces and in some cases, truncated names where the human readable column header is very long."
+        }
+      ]
+    },
+    {
+      "name": "metastore_dataset-get-item",
+      "description": "Get a single dataset. Required: identifier. Optional: show-reference-ids (default: false). Returns the Dataset.",
+      "method": "GET",
+      "path": "/api/1/metastore/schemas/dataset/items/{identifier}",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "identifier",
+          "type": "string",
+          "location": "path",
+          "description": "A dataset identifier",
+          "required": true
+        },
+        {
+          "name": "show-reference-ids",
+          "type": "bool",
+          "location": "query",
+          "description": "Metastore objects often include references to other objects stored in other schemas. These references are usually hidden in responses. Some identifiers are necessary to work with other API endpoints (e.g. datastore endpoints may require the distribution identifier). Add `?show-reference-ids` to show the identifiers generated by DKAN."
+        }
+      ]
+    },
+    {
+      "name": "metastore_get-all",
+      "description": "Get all items for a specific schema (e.g., 'dataset'). Required: schema_id. Optional: show-reference-ids (default: false). Returns array of MetastoreGetAllItem.",
+      "method": "GET",
+      "path": "/api/1/metastore/schemas/{schema_id}/items",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "schema_id",
+          "type": "string",
+          "location": "path",
+          "description": "The name a of a specific schema. For instance, 'dataset.'",
+          "required": true
+        },
+        {
+          "name": "show-reference-ids",
+          "type": "bool",
+          "location": "query",
+          "description": "Metastore objects often include references to other objects stored in other schemas. These references are usually hidden in responses. Some identifiers are necessary to work with other API endpoints (e.g. datastore endpoints may require the distribution identifier). Add `?show-reference-ids` to show the identifiers generated by DKAN."
+        }
+      ]
+    },
+    {
+      "name": "metastore_get-schema",
+      "description": "Get a specific schema. Required: schema_id. Returns the MetastoreGetSchemaResponse.",
+      "method": "GET",
+      "path": "/api/1/metastore/schemas/{schema_id}",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "schema_id",
+          "type": "string",
+          "location": "path",
+          "description": "The name a of a specific schema. For instance, 'dataset.'",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "metastore_get-schemas",
+      "description": "Get list of all schemas. Returns the MetastoreGetSchemasResponse.",
+      "method": "GET",
+      "path": "/api/1/metastore/schemas",
+      "no_auth": true,
+      "params": []
+    }
+  ]
+}

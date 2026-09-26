@@ -1,0 +1,9 @@
+{
+  "dir": "\u003ccli-dir\u003e/openpayments-pp-cli",
+  "research_dir": "\u003ccli-dir\u003e/20260926-151442-beecf015",
+  "verdict": "pass",
+  "actors": null,
+  "issues": [
+    "no Apify actor references found, skipping"
+  ]
+}

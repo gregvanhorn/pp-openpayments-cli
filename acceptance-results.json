@@ -1,0 +1,126 @@
+{
+  "passed": 20,
+  "failed": 0,
+  "results": [
+    {
+      "test": "1",
+      "question": "Top 20 PA recipients by general payments, 2024",
+      "status": "PASS",
+      "detail": "699ms; #1 1497709075 local=1730183.06 live=1730183.06"
+    },
+    {
+      "test": "2",
+      "question": "Top 10 companies paying PA Pain Medicine doctors, 2019-2025",
+      "status": "PASS",
+      "detail": "1190ms; 10 rows; years=2019-2025"
+    },
+    {
+      "test": "3",
+      "question": "Every NJ research payment with an NCT ID, 2024",
+      "status": "PASS",
+      "detail": "386ms; 3833 rows (recipient or PI in NJ); recipient-NJ local=3744 live=3744"
+    },
+    {
+      "test": "4",
+      "question": "All PIs paid for NCT NCT05665088",
+      "status": "PASS",
+      "detail": "58ms; 1 PIs"
+    },
+    {
+      "test": "5",
+      "question": "Full dossier for NPI 1497709075",
+      "status": "PASS",
+      "detail": "56ms; 2024 local=1730277.17 live=1730277.1700000002"
+    },
+    {
+      "test": "6",
+      "question": "PA doctors new to industry payments in 2025",
+      "status": "PASS",
+      "detail": "1566ms; 50 rows; prior years 2019,2020,2021,2022,2023,2024"
+    },
+    {
+      "test": "7",
+      "question": "Largest YoY increase company-doctor pair in PA",
+      "status": "PASS",
+      "detail": "1215ms; top: Abboud, Joseph Albert / Zimmer Biomet Holdings, Inc. +785066.57"
+    },
+    {
+      "test": "8",
+      "question": "Stryker to PA Orthopaedic Surgeons by year",
+      "status": "PASS",
+      "detail": "687ms; by_year=[{\"y\":2023,\"t\":5017846.79},{\"y\":2024,\"t\":5621079.47},{\"y\":2025,\"t\":4814739.19}]; all-specialty 2024 spot local=6701958.91 live=6701958.910000028"
+    },
+    {
+      "test": "9",
+      "question": "Nature-of-payment breakdown for NPI 1497709075",
+      "status": "PASS",
+      "detail": "33ms; 4 natures"
+    },
+    {
+      "test": "10",
+      "question": "PA teaching hospitals ranked by research dollars",
+      "status": "PASS",
+      "detail": "103ms; #1 hospital of the univ of penna"
+    },
+    {
+      "test": "11",
+      "question": "NJ ownership interests grouped by company",
+      "status": "PASS",
+      "detail": "22ms; 54 companies; 2024 rows local=215 live=215"
+    },
+    {
+      "test": "12",
+      "question": "Doctors within 25 mi of 19002 with research payments",
+      "status": "PASS",
+      "detail": "365ms; 50 PIs; max miles 16.69"
+    },
+    {
+      "test": "13",
+      "question": "Products most linked to PA neurosurgeon payments",
+      "status": "PASS",
+      "detail": "1274ms; #1 The Tether"
+    },
+    {
+      "test": "14",
+      "question": "Doctors with research payments from 3+ sponsors",
+      "status": "PASS",
+      "detail": "886ms; 100 PIs; min sponsors 3"
+    },
+    {
+      "test": "15",
+      "question": "KOL ranking, PM&R in PA",
+      "status": "PASS",
+      "detail": "1139ms; #1 Smith, Jack Michael $264596.25 7 cos"
+    },
+    {
+      "test": "16",
+      "question": "Recruiting spine trials in PA/NJ with no local sponsor-paid PI",
+      "status": "PASS",
+      "detail": "2335ms (live CT.gov); 3 gap trials"
+    },
+    {
+      "test": "17",
+      "question": "Records changed since last sync",
+      "status": "PASS",
+      "detail": "55ms; run 20 counts=[]"
+    },
+    {
+      "test": "18",
+      "question": "Spend concentration for Stryker Corporation",
+      "status": "PASS",
+      "detail": "197ms; hhi=614.52 top10=54.4%"
+    },
+    {
+      "test": "19",
+      "question": "MCP tool call matches CLI (top)",
+      "status": "PASS",
+      "detail": "cli=[{\"npi\":\"1497709075\",\"total\":1730183.06},{\"npi\":\"1497793657\",\"total\":1251229.99},{\"npi\":\"1487626149\",\"total\":1193109.91},{\"npi\":\"1851416606\",\"total\":924945.73},{\"npi\":\"1972531424\",\"total\":874801.67}] mcp=[{\"npi\":\"1497709075\",\"total\":1730183.06},{\"npi\":\"1497793657\",\"total\":1251229.99},{\"npi\":\"1487626149\",\"total\":1193109.91},{\"npi\":\"1851416606\",\"total\":924945.73},{\"npi\":\"1972531424\",\"total\":874801.67}]"
+    },
+    {
+      "test": "20",
+      "question": "Agent-written SQL from schema --json",
+      "status": "PASS",
+      "detail": "472ms for 2 commands; tables=payments_general,payments_research,research_investigators,payments_ownership,products,recipients,teaching_hospitals,reporting_entities,company_names,general_pairs,dataset_registry,sync_scopes,sync_runs,sync_changes,trials,trial_locations,zip_centroids; rows=[{\"pis\":1896,\"program_year\":2023,\"total\":292620186.41},{\"pis\":1880,\"program_year\":2024,\"total\":316212955.82},{\"pis\":1799,\"program_year\":2025,\"total\":309377199.42}]"
+    }
+  ]
+}

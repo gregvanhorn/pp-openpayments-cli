@@ -1,0 +1,193 @@
+
+=== verify ===
+warning: GET "/api/1/search": response-schema ID fallback chose display field "name"; add x-resource-id if the API exposes a stable identifier
+warning: GET "/api/1/search/facets": response-schema ID fallback chose display field "name"; add x-resource-id if the API exposes a stable identifier
+Runtime Verification: /root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/working/openpayments-pp-cli/openpayments-pp-cli
+Mode: mock
+
+COMMAND                        KIND         HELP   DRY-RUN  EXEC     SCORE
+resource-path:tail             static       PASS   PASS     PASS     3/3
+resource-path:export           static       PASS   PASS     PASS     3/3
+agent-context                  write        PASS   PASS     PASS     3/3
+analytics                      data-layer   PASS   PASS     PASS     3/3
+api                            local        PASS   PASS     PASS     3/3
+ask                            read         PASS   PASS     PASS     3/3
+catalog                        read         PASS   PASS     PASS     3/3
+changed                        write        PASS   PASS     PASS     3/3
+company                        write        PASS   PASS     FAIL     2/3
+compare                        read         PASS   PASS     FAIL     2/3
+concentration                  read         PASS   PASS     FAIL     2/3
+cooling                        write        PASS   PASS     FAIL     2/3
+datasets                       write        PASS   PASS     PASS     3/3
+datastore                      read         PASS   PASS     PASS     3/3
+doctor                         local        PASS   PASS     PASS     3/3
+dossier                        write        PASS   PASS     FAIL     2/3
+download                       write        PASS   PASS     FAIL     2/3
+export                         data-layer   PASS   PASS     PASS     3/3
+feedback                       write        PASS   PASS     PASS     3/3
+hospital                       write        PASS   PASS     FAIL     2/3
+investigators                  write        PASS   PASS     FAIL     2/3
+kol                            write        PASS   PASS     PASS     3/3
+learnings                      read         PASS   PASS     PASS     3/3
+metastore                      read         PASS   PASS     PASS     3/3
+nature                         write        PASS   PASS     PASS     3/3
+near                           write        PASS   PASS     FAIL     2/3
+new-recipients                 write        PASS   PASS     FAIL     2/3
+overlap                        read         PASS   PASS     PASS     3/3
+ownership                      write        PASS   PASS     PASS     3/3
+playbook                       write        PASS   PASS     FAIL     2/3
+product                        write        PASS   PASS     FAIL     2/3
+profile                        write        PASS   PASS     FAIL     2/3
+query                          read         PASS   PASS     FAIL     2/3
+recall                         read         PASS   PASS     PASS     3/3
+relationships                  read         PASS   PASS     PASS     3/3
+research                       write        PASS   PASS     PASS     3/3
+research-sites                 write        PASS   PASS     PASS     3/3
+rising                         write        PASS   PASS     FAIL     2/3
+roster                         write        PASS   PASS     FAIL     2/3
+schema                         write        PASS   PASS     PASS     3/3
+search                         data-layer   PASS   PASS     PASS     3/3
+sql                            data-layer   PASS   PASS     PASS     3/3
+sync                           data-layer   PASS   PASS     PASS     3/3
+tail                           data-layer   PASS   PASS     PASS     3/3
+teach                          write        PASS   PASS     PASS     3/3
+teach-lookup                   write        PASS   PASS     PASS     3/3
+teach-pattern                  write        PASS   PASS     PASS     3/3
+teach-playbook                 write        PASS   PASS     PASS     3/3
+top                            write        PASS   PASS     PASS     3/3
+trials                         write        PASS   PASS     FAIL     2/3
+which                          read         PASS   PASS     PASS     3/3
+workflow                       write        PASS   PASS     FAIL     2/3
+
+Path-Param Probes (nested commands with <positional> args):
+  PASS datastore datasetindex-query-get
+  PASS datastore resource-query-get
+  PASS learnings confirm
+  PASS learnings forget
+  PASS learnings reject
+  PASS metastore dataset-get-item
+  PASS metastore get-all
+  PASS metastore get-schema
+  PASS profile delete
+  PASS profile save
+  PASS profile show
+  PASS profile use
+  PASS trials sponsor
+
+Data Pipeline: PASS: sync completed (sql unavailable, table validation skipped)
+Pass Rate: 100% (65/65 passed, 0 critical)
+Verdict: PASS
+
+=== validate-narrative ===
+OK: 11 narrative commands resolved and full examples passed
+
+=== dogfood ===
+dogfood: using spec /root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/working/openpayments-pp-cli/spec.json (bundled)
+dogfood: caller --spec=/root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/research/openpayments-readonly-spec.json overridden by bundled /root/printing-press/.runstate/pp-openpayments-cli-4422c709/runs/20260926-151442-beecf015/working/openpayments-pp-cli/spec.json
+warning: GET "/api/1/search": response-schema ID fallback chose display field "name"; add x-resource-id if the API exposes a stable identifier
+warning: GET "/api/1/search/facets": response-schema ID fallback chose display field "name"; add x-resource-id if the API exposes a stable identifier
+Dogfood Report: openpayments-pp-cli
+================================
+
+Path Validity:     2/2 valid (PASS)
+
+Auth Protocol:     MATCH
+  Generated: Uses "unknown" prefix
+  Detail: no bot/bearer/basic scheme detected
+
+OAuth Scope Cover: 0/0 endpoints covered (SKIP)
+  Detail: no OAuth-scoped endpoints in spec
+
+Dead Flags:        0 dead (PASS)
+
+Dead Functions:    0 dead (PASS)
+
+Data Pipeline:     PARTIAL
+  Sync: calls domain-specific Upsert methods (GOOD)
+  Search: uses generic Search only or direct SQL
+  Domain tables: 4
+
+Examples:          10/10 commands have examples (PASS)
+
+Novel Features:    16/16 survived (PASS)
+
+MCP Surface:       PASS (MCP surface mirrors the Cobra tree at runtime)
+
+Verdict: PASS
+
+=== workflow-verify ===
+Workflow Verification: openpayments-pp-cli
+================================
+
+Overall Verdict: workflow-pass
+  - no workflow manifest found, skipping
+
+=== apify-audit ===
+Apify Actor Audit
+=================
+
+No Apify actor references found.
+
+Verdict: pass
+  - no Apify actor references found, skipping
+
+=== verify-skill ===
+=== openpayments-pp-cli ===
+  ✓ All checks passed (flag-names, flag-commands, positional-args, shell-var-quotes, unknown-command)
+  ✓ canonical-sections passed
+
+=== scorecard ===
+Quality Scorecard: openpayments
+
+  Output Modes         10/10
+  Auth                 10/10
+  Error Handling       8/10
+  Terminal UX          10/10
+  README               10/10
+  Doctor               10/10
+  Agent Native         10/10
+  MCP Quality          10/10
+  MCP Desc Quality     10/10
+  MCP Token Efficiency 10/10
+  MCP Remote Transport 10/10
+  MCP Tool Design      7/10
+  MCP Surface Strategy N/A
+  Local Cache          10/10
+  Cache Freshness      5/10
+  Breadth              10/10
+  Vision               10/10
+  Workflows            10/10
+  Insight              10/10
+  Agent Workflow       9/10
+
+  Domain Correctness
+  Path Validity           10/10
+  Auth Protocol           N/A
+  Data Pipeline Integrity 7/10
+  Sync Correctness        10/10
+  Live API Verification   N/A
+  Type Fidelity           5/5
+  Dead Code               5/5
+
+  Total: 93/100 - Grade A
+  Note: omitted from denominator: mcp_surface_strategy, auth_protocol, live_api_verification
+
+Sample Output Probe (live command sample)
+  Binary refresh: rebuilt (staged binary was older than Go sources)
+  Passed: 11/11  (100% pass rate, 5 skipped)
+
+Gaps:
+  - MCP: 9 tools (9 public, 0 auth-required) — readiness: full
+
+Shipcheck Summary
+=================
+  LEG               RESULT  EXIT      ELAPSED
+  verify            PASS    0         6.934s
+  validate-narrative  PASS    0         191ms
+  dogfood           PASS    0         3.598s
+  workflow-verify   PASS    0         23ms
+  apify-audit       PASS    0         38ms
+  verify-skill      PASS    0         8.583s
+  scorecard         PASS    0         5.017s
+
+Verdict: PASS (7/7 legs passed)
