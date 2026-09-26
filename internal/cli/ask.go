@@ -26,7 +26,7 @@ local table with columns and row counts.
 Use this command when no dedicated command fits and you need schema and
 examples to write SQL. Do NOT use it to run a query; use 'sql' instead.`,
 		Example:     `  openpayments-pp-cli ask "top companies paying PA pain doctors"`,
-		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "computed"},
+		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "computed", "pp:happy-args": "<question>=top companies paying PA pain doctors"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if helpOnly(cmd, args) {
 				return cmd.Help()

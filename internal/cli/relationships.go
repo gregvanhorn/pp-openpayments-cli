@@ -25,7 +25,7 @@ time. Do NOT use it for the full payment dossier with products and disputes;
 use 'dossier' instead. Do NOT use it for comparing recipients; use 'compare'
 instead.`,
 		Example:     "  openpayments-pp-cli relationships 1234567890 --agent",
-		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "local"},
+		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "local", "pp:happy-args": "<npi>=1234567890"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if helpOnly(cmd, args) {
 				return cmd.Help()

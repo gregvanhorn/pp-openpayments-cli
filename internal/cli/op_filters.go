@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -308,6 +309,12 @@ func pickRecipient(ctx context.Context, db *sql.DB, arg string) (map[string]any,
 	}
 	switch len(cands) {
 	case 0:
+		// A well-formed NPI with nothing synced is "no records yet", not bad
+		// input: answer with empty sections and say how to load it.
+		if isDigits(arg) && len(arg) == 10 {
+			fmt.Fprintf(os.Stderr, "hint: no synced payments for NPI %s; run 'openpayments-pp-cli sync --years 2019-2025 --npi %s'\n", arg, arg)
+			return map[string]any{"recipient_key": arg, "npi": arg, "synced": false}, nil
+		}
 		return nil, notFoundErr(fmt.Errorf("no match for %q among synced recipients; sync their scope (e.g. 'sync --years 2019-2025 --npi <NPI>')", arg))
 	case 1:
 		return cands[0], nil

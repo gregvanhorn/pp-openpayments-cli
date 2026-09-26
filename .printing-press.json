@@ -117,7 +117,7 @@
     {
       "name": "New recipients",
       "command": "new-recipients",
-      "description": "See which clinicians received industry payments this year for the first time."
+      "description": "See which clinicians received industry payments this year for the first time, compared against every earlier synced year."
     },
     {
       "name": "Rising relationships",
@@ -132,7 +132,7 @@
     {
       "name": "Trial gaps",
       "command": "trials gaps",
-      "description": "List recruiting trials in your region whose sponsor pays no local principal investigator."
+      "description": "List recruiting trials in your region whose sponsor pays no local principal investigator. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct)."
     },
     {
       "name": "Recipient compare",
@@ -172,12 +172,12 @@
     {
       "name": "Radius search",
       "command": "near",
-      "description": "Find paid clinicians within N miles of a ZIP code."
+      "description": "Find paid clinicians within N miles of a ZIP code (ZIP-centroid distance)."
     },
     {
       "name": "Change detection",
       "command": "changed",
-      "description": "See records added, corrected or removed since the previous sync."
+      "description": "See records added, corrected or removed by the latest re-sync (needs at least two syncs of the same scope)."
     },
     {
       "name": "Cooling relationships",
@@ -187,7 +187,7 @@
     {
       "name": "Sponsor trial map",
       "command": "trials sponsor",
-      "description": "Show a sponsor's ClinicalTrials.gov trials with the sites it already pays."
+      "description": "Show a sponsor's ClinicalTrials.gov trials with the sites it already pays. Needs network access to ClinicalTrials.gov; sponsors are matched to CMS manufacturer names by normalized text (--sponsor-alias to correct)."
     }
   ],
   "verify": {
@@ -200,9 +200,9 @@
   },
   "scorecard": {
     "steinberger": {
-      "percentage": 88,
+      "percentage": 93,
       "grade": "A",
-      "total": 88
+      "total": 93
     }
   }
 }

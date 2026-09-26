@@ -24,6 +24,12 @@ func init() {
 
 var localAnn = map[string]string{"mcp:read-only": "true", "pp:data-source": "local"}
 
+func withAnn(k, v string) map[string]string {
+	m := ann()
+	m[k] = v
+	return m
+}
+
 func ann() map[string]string {
 	m := make(map[string]string, len(localAnn))
 	for k, v := range localAnn {
@@ -47,7 +53,7 @@ recipients side by side; use 'compare' instead. Do NOT use it for the
 per-company tenure timeline; use 'relationships' instead.`,
 		Example: `  openpayments-pp-cli dossier 1234567890
   openpayments-pp-cli dossier "Smith, Jane" --state PA --payments 20 --json`,
-		Annotations: ann(),
+		Annotations: withAnn("pp:happy-args", "<npi>=1234567890"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if helpOnly(cmd, args) {
 				return cmd.Help()

@@ -38,7 +38,7 @@ it for a company's general-payment footprint; use 'company' instead. Do NOT
 use it for trials missing local PIs; use 'trials gaps' instead.`,
 		Example: `  openpayments-pp-cli trials sponsor Medtronic --agent
   openpayments-pp-cli trials sponsor "Boston Scientific" --state PA,NJ`,
-		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "auto"},
+		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "auto", "pp:happy-args": "<company>=Medtronic;--limit=5"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if helpOnly(cmd, args) {
 				return cmd.Help()

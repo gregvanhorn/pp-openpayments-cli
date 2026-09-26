@@ -21,7 +21,7 @@ Use this command to put 2+ specific recipients side by side. Do NOT use it
 for one recipient's full history; use 'dossier' instead. Do NOT use it for a
 long NPI list; use 'roster' instead.`,
 		Example:     "  openpayments-pp-cli compare 1234567890 1987654321 --agent",
-		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "local"},
+		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "local", "pp:happy-args": "<npi>=1234567890;<npi>=1987654321"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if helpOnly(cmd, args) {
 				return cmd.Help()

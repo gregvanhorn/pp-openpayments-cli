@@ -23,7 +23,7 @@ Use this command to compare two companies' recipient sets. Do NOT use it for
 one company's footprint; use 'company' instead. Do NOT use it to compare
 doctors; use 'compare' instead.`,
 		Example:     `  openpayments-pp-cli overlap "Stryker Corporation" "Zimmer Biomet" --state PA --agent`,
-		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "local"},
+		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "local", "pp:happy-args": "<company>=Stryker Corporation;<company>=Zimmer Biomet"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if helpOnly(cmd, args) {
 				return cmd.Help()

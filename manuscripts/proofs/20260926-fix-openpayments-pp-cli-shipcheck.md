@@ -17,3 +17,8 @@
 Every novel command was executed against real synced data (NJ 2024 research/ownership, NJ 2024 Stryker general, PA 2023 general in progress) — see build log; outputs non-empty and plausible (e.g. KOL PA orthopaedics, YoY cooling, NJ research sites, investigators for NCT04626635, trials sites/gaps/sponsor live against ClinicalTrials.gov).
 
 ## Recommendation: ship
+
+## Final (after dogfood fixes + polish)
+- shipcheck: PASS 7/7 legs, scorecard **93/100 Grade A**, live sample probe 12/12 pass.
+- live dogfood (full): **239/239 pass**, no hollow coverage; phase5-acceptance.json status pass (runner-written).
+- concentration gained an --data-source auto live path over CMS's indexed "grouped by covered recipient and reporting entities" summary (exact totals in ~4 s).
