@@ -114,7 +114,7 @@ research sites by specialty and state; use 'research-sites' instead.`,
 			if len(rows) > f.limit {
 				rows = rows[:f.limit]
 			}
-			return printRows(cmd, flags, rows)
+			return printRowsDB(cmd, flags, db, rows)
 		},
 	}
 	addFilterFlags(cmd, &f, 50)

@@ -307,9 +307,11 @@ func Sync(ctx context.Context, g Getter, db *sql.DB, reg []Dataset, scope Scope,
 		}
 	}
 	w := newWriter(db, run)
+	fetchCtx, cancelFetch := context.WithCancel(ctx)
+	defer cancelFetch()
 	pages := make(chan pageResult, opts.Concurrency*2)
 	writeErr := make(chan error, 1)
-	go func() { writeErr <- w.consume(pages) }()
+	go func() { writeErr <- w.consume(pages, cancelFetch) }()
 
 	var queue []*partition
 	for _, u := range units {
@@ -325,7 +327,7 @@ func Sync(ctx context.Context, g Getter, db *sql.DB, reg []Dataset, scope Scope,
 		go func() {
 			defer wg.Done()
 			for p := range work {
-				fetchPartition(ctx, g, p, opts.MaxPages, pages)
+				fetchPartition(fetchCtx, g, p, opts.MaxPages, pages)
 				mu.Lock()
 				done++
 				if p.err != nil {
@@ -340,9 +342,9 @@ func Sync(ctx context.Context, g Getter, db *sql.DB, reg []Dataset, scope Scope,
 	for _, p := range queue {
 		select {
 		case work <- p:
-		case <-ctx.Done():
+		case <-fetchCtx.Done():
 		}
-		if ctx.Err() != nil {
+		if fetchCtx.Err() != nil {
 			break
 		}
 	}
@@ -350,6 +352,7 @@ func Sync(ctx context.Context, g Getter, db *sql.DB, reg []Dataset, scope Scope,
 	wg.Wait()
 	close(pages)
 	if err := <-writeErr; err != nil {
+		_, _ = db.Exec(`UPDATE sync_runs SET finished_at=?, status='failed' WHERE sync_run=?`, time.Now().UTC().Format(time.RFC3339), run)
 		return nil, err
 	}
 
@@ -436,6 +439,8 @@ func fetchPartition(ctx context.Context, g Getter, p *partition, maxPages int, o
 	q := Query{
 		Conditions: append(append([]Condition{}, u.filter.conds...), p.extra...),
 		Limit:      pageSize,
+		// A stable order keeps offset pages from skipping or repeating rows.
+		Sorts: []Sort{{Property: "record_id"}},
 	}
 	// Selecting properties shrinks pages ~50x; research's PI slots make the
 	// URL too long, so research pulls full rows (research volume is small).
@@ -482,7 +487,7 @@ func newWriter(db *sql.DB, run int64) *writer {
 	return &writer{db: db, run: run, now: time.Now().UTC().Format(time.RFC3339)}
 }
 
-func (w *writer) consume(pages <-chan pageResult) error {
+func (w *writer) consume(pages <-chan pageResult, cancel func()) error {
 	var firstErr error
 	for pg := range pages {
 		if firstErr != nil {
@@ -490,6 +495,9 @@ func (w *writer) consume(pages <-chan pageResult) error {
 		}
 		if err := w.writePage(pg); err != nil {
 			firstErr = err
+			if cancel != nil {
+				cancel() // stop fetchers instead of paging for hours
+			}
 		}
 	}
 	return firstErr
@@ -647,6 +655,12 @@ func (w *writer) reconcileDeletes(u *scopeUnit) (int, error) {
 	table := TableFor(u.typ)
 	where := "program_year = ? AND sync_run <> ? AND " + u.filter.where
 	args := append([]any{u.year, w.run}, u.filter.args...)
+	if len(u.parts) > 1 {
+		// Month-partitioned fetches only see rows with a parseable payment
+		// date in that year; never reconcile rows they could not have seen.
+		where += " AND payment_date BETWEEN ? AND ?"
+		args = append(args, fmt.Sprintf("%d-01-01", u.year), fmt.Sprintf("%d-12-31", u.year))
+	}
 	amountCol := "amount"
 	if u.typ == TypeOwnership {
 		amountCol = "amount_invested"
@@ -687,7 +701,7 @@ func (w *writer) reconcileDeletes(u *scopeUnit) (int, error) {
 		}
 		_, _ = tx.Exec(`DELETE FROM products WHERE payment_type=? AND record_id=? AND program_year=?`, u.typ, g.id, u.year)
 		_, _ = tx.Exec(`DELETE FROM research_investigators WHERE record_id=? AND program_year=?`, g.id, u.year)
-		if _, err := tx.Exec(`INSERT INTO sync_changes (sync_run, payment_type, record_id, program_year, change, old_amount, new_amount, cms_change_type, npi, recipient_name, company) VALUES (?,?,?,?, 'deleted', ?, NULL, NULL, ?, ?, ?)`,
+		if _, err := tx.Exec(`INSERT INTO sync_changes (sync_run, payment_type, record_id, program_year, change, old_amount, new_amount, cms_change_type, npi, recipient_name, company) VALUES (?,?,?,?, 'removed', ?, NULL, NULL, ?, ?, ?)`,
 			w.run, u.typ, g.id, u.year, g.amt, g.npi, g.name, g.company); err != nil {
 			return 0, err
 		}
@@ -716,6 +730,12 @@ func RebuildDerived(db *sql.DB) error {
 		   SELECT COALESCE(npi, 'profile:'||profile_id), npi, profile_id, name, first_name, last_name, recipient_type, specialty, city, state, zip5, program_year, 0, 0, 0
 		     FROM research_investigators WHERE npi IS NOT NULL OR profile_id IS NOT NULL
 		 ) GROUP BY key`,
+		`UPDATE recipients SET specialty = (
+		   SELECT specialty FROM (
+		     SELECT specialty, COUNT(*) c, MAX(program_year) y FROM payments_general g WHERE g.npi = recipients.npi AND specialty IS NOT NULL GROUP BY specialty
+		     UNION ALL SELECT specialty, COUNT(*), MAX(program_year) FROM research_investigators i WHERE i.npi = recipients.npi AND specialty IS NOT NULL GROUP BY specialty
+		   ) ORDER BY c DESC, y DESC LIMIT 1)
+		 WHERE npi IS NOT NULL AND EXISTS (SELECT 1 FROM payments_general g WHERE g.npi = recipients.npi UNION ALL SELECT 1 FROM research_investigators i WHERE i.npi = recipients.npi)`,
 		`DELETE FROM teaching_hospitals`,
 		`INSERT OR REPLACE INTO teaching_hospitals (ccn, hospital_id, name, city, state, zip5)
 		 SELECT teaching_hospital_ccn, MAX(teaching_hospital_id), MAX(teaching_hospital_name), MAX(city), MAX(state), MAX(zip5) FROM (

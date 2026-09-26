@@ -102,11 +102,16 @@ var StateCodes = map[string]string{
 
 // StateName returns the full name for a USPS code ("" when unknown).
 func StateName(code string) string {
-	code = strings.ToUpper(code)
+	return stateNames[strings.ToUpper(code)]
+}
+
+// stateNames is the deterministic USPS code → ClinicalTrials.gov name map.
+var stateNames = func() map[string]string {
+	m := map[string]string{}
 	for name, c := range StateCodes {
-		if c == code {
-			return name
+		if cur, ok := m[c]; !ok || len(name) < len(cur) {
+			m[c] = name
 		}
 	}
-	return ""
-}
+	return m
+}()

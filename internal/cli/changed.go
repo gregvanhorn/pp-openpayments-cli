@@ -16,7 +16,7 @@ func newNovelChangedCmd(flags *rootFlags) *cobra.Command {
 		Short: "Records added, corrected or removed since the previous sync",
 		Long: `Lists per-record changes the sync engine detected: 'added' (new record in a
 scope synced before), 'amended' (amount or dispute status changed) and
-'deleted' (CMS no longer publishes it). --since-last-sync shows the most
+'removed' (no longer returned in that scope: deleted by CMS or moved out of it). --since-last-sync shows the most
 recent run that touched data; --run picks a specific run; --cms instead
 lists rows CMS itself flags with change_type NEW/CHANGED in the synced data.`,
 		Example: `  openpayments-pp-cli changed --since-last-sync --agent
@@ -42,13 +42,11 @@ lists rows CMS itself flags with change_type NEW/CHANGED in the synced data.`,
 				return err
 			}
 			target := run
-			if target == 0 {
-				for _, r := range runs {
-					if toInt(r["added"])+toInt(r["amended"])+toInt(r["deleted"]) > 0 || !sinceLast {
-						target = int(toInt(r["sync_run"]))
-						break
-					}
-				}
+			if target == 0 && sinceLast {
+				_ = db.QueryRowContext(ctx, `SELECT COALESCE(MAX(sync_run),0) FROM sync_changes`).Scan(&target)
+			}
+			if target == 0 && len(runs) > 0 {
+				target = int(toInt(runs[0]["sync_run"]))
 			}
 			var summary []map[string]any
 			for _, r := range runs {

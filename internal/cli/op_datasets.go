@@ -3,6 +3,7 @@ package cli
 // pp:data-source auto
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -132,6 +133,7 @@ func newDatasetsResolveCmd(flags *rootFlags) *cobra.Command {
 func newDownloadCmd(flags *rootFlags) *cobra.Command {
 	var year int
 	var typ, out string
+	var force bool
 	cmd := &cobra.Command{
 		Use:   "download",
 		Short: "Download the CMS bulk CSV for a program year and payment type",
@@ -140,7 +142,9 @@ GB (15M+ rows); use --dry-run to see the URL first, or 'sync --full --bulk
 --year Y --type T --states PA' to load only a scope into the local store.`,
 		Example: `  openpayments-pp-cli download --year 2024 --type research --dry-run
   openpayments-pp-cli download --year 2024 --type ownership --out ./ownership-2024.csv`,
-		Annotations: map[string]string{"mcp:read-only": "true", "pp:data-source": "live"},
+		// Writes a local file, so it is not advertised as read-only and is
+		// hidden from the MCP surface.
+		Annotations: map[string]string{"pp:data-source": "live", "mcp:hidden": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if helpOnly(cmd, args) {
 				return cmd.Help()
@@ -169,7 +173,10 @@ GB (15M+ rows); use --dry-run to see the URL first, or 'sync --full --bulk
 				info["dry_run"] = true
 				return flags.printJSON(cmd, info)
 			}
-			n, err := downloadTo(cmd, d.DownloadURL, out)
+			if _, statErr := os.Stat(out); statErr == nil && !force {
+				return usageErr(fmt.Errorf("%s already exists; pass --force to overwrite", out))
+			}
+			n, err := downloadTo(ctx, d.DownloadURL, out)
 			if err != nil {
 				return apiErr(err)
 			}
@@ -180,17 +187,18 @@ GB (15M+ rows); use --dry-run to see the URL first, or 'sync --full --bulk
 	cmd.Flags().IntVar(&year, "year", 0, "Program year (2019-2025)")
 	cmd.Flags().StringVar(&typ, "type", "", "general, research or ownership")
 	cmd.Flags().StringVar(&out, "out", "", "Output file (default: the CMS file name)")
+	cmd.Flags().BoolVar(&force, "force", false, "Overwrite --out if it exists")
 	return cmd
 }
 
-func downloadTo(cmd *cobra.Command, url, out string) (int64, error) {
-	req, err := http.NewRequestWithContext(cmd.Context(), http.MethodGet, url, nil)
+func downloadTo(ctx context.Context, url, out string) (int64, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return 0, err
 	}
 	req.Header.Set("User-Agent", op.UserAgent)
 	limiter := cliutil.NewAdaptiveLimiter(1)
-	if err := limiter.Wait(cmd.Context()); err != nil {
+	if err := limiter.Wait(ctx); err != nil {
 		return 0, err
 	}
 	resp, err := http.DefaultClient.Do(req)

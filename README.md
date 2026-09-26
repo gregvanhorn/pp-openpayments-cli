@@ -306,6 +306,40 @@ openpayments-pp-cli sql "SELECT company, SUM(amount) total FROM payments_general
 
 Write your own query after reading schema --json.
 
+## Cookbook
+
+Seed a region first (the answers below assume it):
+
+```bash
+openpayments-pp-cli sync --full --bulk --year 2024 --type general --states PA,NJ   # bulk CSV, fastest for a whole state
+openpayments-pp-cli sync --years 2023-2025 --types research,ownership --states PA,NJ
+openpayments-pp-cli sync --years 2019-2025 --npi 1234567890                        # one clinician, every year
+```
+
+| Question | Command |
+|---|---|
+| Top 20 PA recipients by general payments in 2024 | `openpayments-pp-cli top --by recipient --state PA --year 2024 --limit 20` |
+| Top 10 companies paying PA Pain Medicine doctors, 2019-2025 | `openpayments-pp-cli top --by company --state PA --specialty "Pain Medicine" --year 2019-2025 --limit 10` |
+| Every NJ research payment with an NCT ID, 2024 | `openpayments-pp-cli research --state NJ --year 2024 --has-nct` |
+| All PIs paid for one trial | `openpayments-pp-cli investigators --nct NCT04280705` |
+| One clinician's full dossier | `openpayments-pp-cli dossier 1234567890` |
+| PA clinicians new to industry payments in 2025 | `openpayments-pp-cli new-recipients --year 2025 --state PA` |
+| Largest YoY increase for a company-doctor pair in PA | `openpayments-pp-cli rising --state PA --limit 20` |
+| Stryker's payments to PA orthopaedic surgeons by year | `openpayments-pp-cli company stryker --state PA --specialty "Orthopaedic Surgery" --json --select by_year` |
+| A clinician's payments by nature | `openpayments-pp-cli nature --npi 1234567890` |
+| PA teaching hospitals ranked by research dollars | `openpayments-pp-cli hospital --state PA --metric research` |
+| NJ ownership interests grouped by company | `openpayments-pp-cli ownership --state NJ --group-by company` |
+| Clinicians within 25 miles of 19002 with research payments | `openpayments-pp-cli near --zip 19002 --miles 25 --type research` |
+| Products most linked to PA neurosurgeon payments | `openpayments-pp-cli top --by product --state PA --specialty "Neurological Surgery"` |
+| PIs paid by 3+ research sponsors | `openpayments-pp-cli research-sites --min-sponsors 3` |
+| KOL ranking, PM&R in PA | `openpayments-pp-cli kol --specialty "Physical Medicine" --state PA` |
+| Recruiting spine trials in PA/NJ with no sponsor-paid local PI | `openpayments-pp-cli trials gaps --condition spine --state PA,NJ` |
+| Records changed since the last sync | `openpayments-pp-cli changed --since-last-sync` |
+| How concentrated a company's spend is | `openpayments-pp-cli concentration "Stryker Corporation"` |
+| Anything else | `openpayments-pp-cli schema --json`, then `openpayments-pp-cli sql "SELECT ..."` (or `openpayments-pp-cli ask "<question>"`) |
+
+`scripts/acceptance.sh` runs all of these (plus MCP parity) against your store and checks timing and live-API spot totals. Reports are published facts only: this CLI never labels a payment improper or a clinician conflicted, and it shows `dispute` status as published.
+
 ## Usage
 
 Run `openpayments-pp-cli --help` for the full command reference and flag list.
@@ -360,6 +394,20 @@ Relocation is one-way. Unsetting `OPENPAYMENTS_HOME` does not move files back to
 Existing installs keep working because the platform-default rung matches the legacy layout. Run `openpayments-pp-cli doctor --fail-on warn` to check path warnings in automation.
 
 ## Commands
+
+### Open Payments (local store)
+
+- **`sync`** - scoped mirror: `--years --types --states --specialty --npi --company`, or `--full --bulk --year --type` for the CMS bulk CSV
+- **`datasets list|resolve`**, **`download`** - dataset IDs per year/type and bulk CSV files
+- **`dossier`**, **`relationships`**, **`compare`**, **`roster`** - one or many clinicians
+- **`company`**, **`concentration`**, **`overlap`** - one or two paying companies
+- **`top`**, **`kol`**, **`nature`**, **`product`**, **`hospital`**, **`ownership`** - leaderboards and breakdowns
+- **`research`**, **`research-sites`**, **`investigators`**, **`near`** - research payments, PIs and sites
+- **`new-recipients`**, **`rising`**, **`cooling`**, **`changed`** - what moved between years and syncs
+- **`trials sites|gaps|sponsor`** - joins with ClinicalTrials.gov (live, cached 7 days)
+- **`sql`**, **`schema`**, **`ask`**, **`query`** - agent escape hatches (local SQL, schema, glossary/examples, live DKAN query)
+
+### Raw API wrappers
 
 ### catalog
 

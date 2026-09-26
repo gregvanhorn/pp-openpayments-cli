@@ -81,7 +81,7 @@ per-company tenure timeline; use 'relationships' instead.`,
 				{"by_year", `SELECT program_year, COUNT(*) payments, SUM(amount) total, COUNT(DISTINCT company) companies, MAX(dataset_modified) dataset_modified FROM payments_general p WHERE ` + w + ` GROUP BY program_year ORDER BY program_year`},
 				{"by_company", `SELECT company, COUNT(*) payments, SUM(amount) total, MIN(program_year) first_year, MAX(program_year) last_year FROM payments_general p WHERE ` + w + ` GROUP BY company ORDER BY total DESC LIMIT 25`},
 				{"by_nature", `SELECT nature, COUNT(*) payments, SUM(amount) total FROM payments_general p WHERE ` + w + ` GROUP BY nature ORDER BY total DESC`},
-				{"by_product", `SELECT pr.name product, pr.kind, pr.category, COUNT(*) payments, SUM(p.amount) total FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` GROUP BY pr.name ORDER BY total DESC LIMIT 25`},
+				{"by_product", `SELECT MAX(name) product, MAX(kind) kind, MAX(category) category, COUNT(*) payments, SUM(amount) total FROM (SELECT DISTINCT p.record_id, p.program_year, p.amount, LOWER(pr.name) pkey, pr.name, pr.kind, pr.category FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` AND pr.name IS NOT NULL) GROUP BY pkey ORDER BY total DESC LIMIT 25`},
 				{"research_studies", `SELECT nct_id, MAX(name_of_study) name_of_study, company, COUNT(*) payments, SUM(amount) total, MIN(program_year) first_year, MAX(program_year) last_year FROM payments_research p WHERE ` + w + ` GROUP BY nct_id, company ORDER BY total DESC LIMIT 50`},
 			}
 			for _, s := range sections {
@@ -171,7 +171,7 @@ compare two companies' recipients; use 'overlap' instead.`,
 				{"by_specialty", `SELECT specialty, COUNT(DISTINCT npi) recipients, SUM(amount) total FROM payments_general p WHERE ` + w + ` AND specialty IS NOT NULL GROUP BY specialty ORDER BY total DESC LIMIT 15`},
 				{"by_state", `SELECT state, COUNT(DISTINCT npi) recipients, SUM(amount) total FROM payments_general p WHERE ` + w + ` GROUP BY state ORDER BY total DESC LIMIT 15`},
 				{"by_nature", `SELECT nature, COUNT(*) payments, SUM(amount) total FROM payments_general p WHERE ` + w + ` GROUP BY nature ORDER BY total DESC`},
-				{"by_product", `SELECT pr.name product, pr.kind, COUNT(*) payments, SUM(p.amount) total FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` GROUP BY pr.name ORDER BY total DESC LIMIT 15`},
+				{"by_product", `SELECT MAX(name) product, MAX(kind) kind, COUNT(*) payments, SUM(amount) total FROM (SELECT DISTINCT p.record_id, p.program_year, p.amount, LOWER(pr.name) pkey, pr.name, pr.kind FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year WHERE ` + w + ` AND pr.name IS NOT NULL) GROUP BY pkey ORDER BY total DESC LIMIT 15`},
 				{"research_by_year", `SELECT program_year, COUNT(*) payments, COUNT(DISTINCT nct_id) studies, SUM(amount) total FROM payments_research p WHERE ` + w + ` GROUP BY program_year ORDER BY program_year`},
 			}
 			for _, s := range sections {
@@ -237,9 +237,12 @@ use it for radius questions around a ZIP; use 'near' instead.`,
 				if typ == "ownership" {
 					return usageErr(fmt.Errorf("--by product needs --type general or research"))
 				}
-				q = `SELECT pr.name product, MAX(pr.kind) kind, MAX(pr.category) category, COUNT(*) payments, COUNT(DISTINCT p.npi) recipients, SUM(p.amount) total, MAX(p.dataset_modified) dataset_modified
+				// DISTINCT payment × product name, so a product repeated across
+				// slots of one payment is counted once.
+				q = `SELECT MAX(name) product, MAX(kind) kind, MAX(category) category, COUNT(*) payments, COUNT(DISTINCT npi) recipients, SUM(amount) total, MAX(dataset_modified) dataset_modified FROM (
+					SELECT DISTINCT p.record_id, p.program_year, p.npi, p.amount, p.dataset_modified, LOWER(pr.name) pkey, pr.name, pr.kind, pr.category
 					FROM ` + table + ` p JOIN products pr ON pr.payment_type='` + typ + `' AND pr.record_id=p.record_id AND pr.program_year=p.program_year
-					WHERE ` + w + ` AND pr.name IS NOT NULL GROUP BY LOWER(pr.name) ORDER BY total DESC LIMIT ?`
+					WHERE ` + w + ` AND pr.name IS NOT NULL) GROUP BY pkey ORDER BY total DESC LIMIT ?`
 			case "state":
 				q = `SELECT state, COUNT(*) payments, COUNT(DISTINCT npi) recipients, SUM(` + amount + `) total FROM ` + table + ` p WHERE ` + w + ` GROUP BY state ORDER BY total DESC LIMIT ?`
 			case "specialty":
@@ -497,17 +500,20 @@ func newProductCmd(flags *rootFlags) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			w += " AND (LOWER(pr.name) LIKE ? OR LOWER(pr.category) LIKE ?)"
+			// Each payment counts once even when several product slots match.
+			match := "pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year AND (LOWER(pr.name) LIKE ? OR LOWER(pr.category) LIKE ?)"
 			term := "%" + strings.ToLower(strings.Join(args, " ")) + "%"
-			a = append(a, term, term)
+			margs := []any{term, term}
 			if kind != "" {
-				w += " AND LOWER(pr.kind) = ?"
-				a = append(a, strings.ToLower(kind))
+				match += " AND LOWER(pr.kind) = ?"
+				margs = append(margs, strings.ToLower(kind))
 			}
-			q := `SELECT p.npi, MAX(p.recipient_name) name, MAX(p.specialty) specialty, MAX(p.city) city, MAX(p.state) state, GROUP_CONCAT(DISTINCT pr.name) products, GROUP_CONCAT(DISTINCT p.company) companies,
+			q := `SELECT p.npi, MAX(p.recipient_name) name, MAX(p.specialty) specialty, MAX(p.city) city, MAX(p.state) state,
+				GROUP_CONCAT(DISTINCT (SELECT MIN(pr.name) FROM products pr WHERE ` + match + `)) products, GROUP_CONCAT(DISTINCT p.company) companies,
 				COUNT(*) payments, SUM(p.amount) total, MIN(p.program_year) first_year, MAX(p.program_year) last_year
-				FROM payments_general p JOIN products pr ON pr.payment_type='general' AND pr.record_id=p.record_id AND pr.program_year=p.program_year
-				WHERE ` + w + ` GROUP BY COALESCE(p.npi, p.teaching_hospital_ccn) ORDER BY total DESC LIMIT ?`
+				FROM payments_general p WHERE ` + w + ` AND EXISTS (SELECT 1 FROM products pr WHERE ` + match + `)
+				GROUP BY COALESCE(p.npi, p.teaching_hospital_ccn) ORDER BY total DESC LIMIT ?`
+			a = append(append(append([]any{}, margs...), a...), margs...)
 			return runLocal(ctx, cmd, flags, db, q, append(a, f.limit)...)
 		},
 	}

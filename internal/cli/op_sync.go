@@ -78,11 +78,23 @@ func runOPSync(cmd *cobra.Command, flags *rootFlags, o *opSyncFlags) error {
 	if err != nil {
 		return usageErr(err)
 	}
-	scope := op.Scope{Years: yl, Types: tl, States: upperList(splitCSVFlag(o.states)), Specialties: splitCSVFlag(o.specialty), NPIs: splitCSVFlag(o.npis)}
+	scope := op.Scope{Years: yl, Types: tl, States: upperList(splitCSVFlag(o.states)), Specialties: splitCSVFlag(o.specialty), NPIs: splitCSVFlag(o.npis), Companies: splitCSVFlag(o.companies)}
 	if full && (o.bulk || scope.Empty()) {
+		if dryRunOK(flags) {
+			return flags.printJSON(cmd, map[string]any{"dry_run": true, "action": "sync --full", "scope": scope})
+		}
+		if len(scope.Companies) > 0 {
+			ctx, cancel := boundSyncCtx(cmd, flags)
+			defer cancel()
+			resolved, err := resolveSyncCompanies(ctx, flags, scope.Companies)
+			if err != nil {
+				return err
+			}
+			scope.Companies = resolved
+		}
 		return runBulkSync(cmd, flags, scope)
 	}
-	if scope.Empty() && len(splitCSVFlag(o.companies)) == 0 {
+	if scope.Empty() {
 		return usageErr(fmt.Errorf("refusing an unscoped API sync (15M+ rows per year): add --states, --specialty, --npi or --company, or use --full --bulk for the CMS bulk CSV"))
 	}
 	if dryRunOK(flags) {
@@ -102,18 +114,10 @@ func runOPSync(cmd *cobra.Command, flags *rootFlags, o *opSyncFlags) error {
 	if err != nil {
 		return err
 	}
-	if cs := splitCSVFlag(o.companies); len(cs) > 0 {
-		if err := op.EnsureCompanyProfiles(ctx, c, db, reg, false); err != nil {
-			return apiErr(fmt.Errorf("loading company profiles: %w", err))
-		}
-		resolved, matches, err := op.ResolveCompanies(db, cs)
-		if err != nil {
+	if len(scope.Companies) > 0 {
+		if scope.Companies, err = resolveSyncCompanies(ctx, flags, scope.Companies); err != nil {
 			return err
 		}
-		for term, names := range matches {
-			fmt.Fprintf(os.Stderr, "company %q → %d CMS name(s): %v\n", term, len(names), names)
-		}
-		scope.Companies = resolved
 	}
 	if cliutil.IsDogfoodEnv() && maxPages == 0 {
 		maxPages = 1
@@ -159,4 +163,31 @@ func recordFrameworkSyncState(st *store.Store, report *op.SyncReport) {
 	for res, n := range counts {
 		_ = st.SaveSyncState(res, "", n)
 	}
+}
+
+// resolveSyncCompanies expands loose company names to CMS spellings.
+func resolveSyncCompanies(ctx context.Context, flags *rootFlags, terms []string) ([]string, error) {
+	_, db, err := openOPStore(ctx)
+	if err != nil {
+		return nil, err
+	}
+	reg, err := resolveRegistry(ctx, flags, db, false)
+	if err != nil {
+		return nil, err
+	}
+	c, err := flags.newClient()
+	if err != nil {
+		return nil, err
+	}
+	if err := op.EnsureCompanyProfiles(ctx, c, db, reg, false); err != nil {
+		return nil, apiErr(fmt.Errorf("loading company profiles: %w", err))
+	}
+	resolved, matches, err := op.ResolveCompanies(db, terms)
+	if err != nil {
+		return nil, err
+	}
+	for term, names := range matches {
+		fmt.Fprintf(os.Stderr, "company %q → %d CMS name(s): %v\n", term, len(names), names)
+	}
+	return resolved, nil
 }

@@ -119,6 +119,9 @@ func BulkSync(ctx context.Context, db *sql.DB, ds Dataset, typ string, scope Sco
 			return nil, fmt.Errorf("reading CSV row %d: %w", read+1, err)
 		}
 		read++
+		if opts.Progress != nil && read%500000 == 0 {
+			fmt.Fprintf(opts.Progress, "bulk: %s read %d rows, kept %d\n", ds.Title, read, part.rows)
+		}
 		row := make(map[string]any, len(keys))
 		for i, k := range keys {
 			if i < len(rec) {
@@ -134,9 +137,6 @@ func BulkSync(ctx context.Context, db *sql.DB, ds Dataset, typ string, scope Sco
 			if err := flush(); err != nil {
 				return nil, err
 			}
-		}
-		if opts.Progress != nil && read%250000 == 0 {
-			fmt.Fprintf(opts.Progress, "bulk: %s read %d rows, kept %d\n", ds.Title, read, part.rows)
 		}
 		if opts.MaxRows > 0 && part.rows >= opts.MaxRows {
 			break
@@ -195,13 +195,17 @@ func scopePredicate(typ string, s Scope) func(Row) bool {
 		}
 		return m
 	}
-	states, npis, companies := set(s.States, true), set(s.NPIs, false), set(s.Companies, false)
+	states, npis := set(s.States, true), set(s.NPIs, false)
+	companies := map[string]bool{}
+	for _, c := range s.Companies {
+		companies[strings.ToLower(c)] = true
+	}
 	npiKey, specKey := recipientField(typ, "npi"), recipientField(typ, "specialty")
 	return func(r Row) bool {
 		if len(states) > 0 && !states[strings.ToUpper(r.S("recipient_state"))] {
 			return false
 		}
-		if len(companies) > 0 && !companies[r.S(companyField)] {
+		if len(companies) > 0 && !companies[strings.ToLower(r.S(companyField))] {
 			return false
 		}
 		if len(npis) > 0 && !npis[r.S(npiKey)] {

@@ -43,6 +43,9 @@ it for one trial's locations; use 'trials sites' instead.`,
 			if dryRunOK(flags) {
 				return writeDryRun(cmd.OutOrStdout(), flags, "trials gaps")
 			}
+			if flags.dataSource == "local" {
+				return usageErr(fmt.Errorf("trials gaps searches ClinicalTrials.gov live; there is no local-only equivalent (drop --data-source local)"))
+			}
 			region := upperList(splitCSVFlag(states))
 			if condition == "" || len(region) == 0 {
 				return usageErr(fmt.Errorf("--condition and --state are required"))
@@ -110,15 +113,19 @@ it for one trial's locations; use 'trials sites' instead.`,
 					for _, s := range region {
 						args = append(args, s)
 					}
-					_ = db.QueryRowContext(ctx, `SELECT COUNT(DISTINCT COALESCE(i.npi, i.name)) FROM research_investigators i JOIN payments_research p ON p.record_id=i.record_id AND p.program_year=i.program_year
-						WHERE p.company IN (`+qmarks(len(matched))+`) AND i.state IN (`+qmarks(len(region))+`)`, args...).Scan(&localPIs)
+					if err := db.QueryRowContext(ctx, `SELECT COUNT(DISTINCT COALESCE(i.npi, i.name)) FROM research_investigators i JOIN payments_research p ON p.record_id=i.record_id AND p.program_year=i.program_year
+						WHERE p.company IN (`+qmarks(len(matched))+`) AND i.state IN (`+qmarks(len(region))+`)`, args...).Scan(&localPIs); err != nil {
+						return err
+					}
 				}
 				regionArgs := []any{t.NCTID}
 				for _, s := range region {
 					regionArgs = append(regionArgs, s)
 				}
-				_ = db.QueryRowContext(ctx, `SELECT COUNT(DISTINCT COALESCE(i.npi, i.name)) FROM research_investigators i JOIN payments_research p ON p.record_id=i.record_id AND p.program_year=i.program_year
-					WHERE p.nct_id = ? AND i.state IN (`+qmarks(len(region))+`)`, regionArgs...).Scan(&trialPIs)
+				if err := db.QueryRowContext(ctx, `SELECT COUNT(DISTINCT COALESCE(i.npi, i.name)) FROM research_investigators i JOIN payments_research p ON p.record_id=i.record_id AND p.program_year=i.program_year
+					WHERE p.nct_id = ? AND i.state IN (`+qmarks(len(region))+`)`, regionArgs...).Scan(&trialPIs); err != nil {
+					return err
+				}
 				gap := localPIs == 0
 				if !gap && !includeCovered {
 					continue

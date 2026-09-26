@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -45,7 +46,7 @@ instead.`,
 				return err
 			}
 			pred, pargs := recipientPredicate("p", rec)
-			rows, err := queryArgs(ctx, db, `SELECT company, program_year, SUM(amount) total, COUNT(*) payments, GROUP_CONCAT(DISTINCT nature) natures FROM (
+			rows, err := queryArgs(ctx, db, `SELECT company, program_year, SUM(amount) total, COUNT(*) payments, json_group_array(DISTINCT nature) natures FROM (
 				SELECT company, program_year, amount, nature FROM payments_general p WHERE `+pred+`
 				UNION ALL SELECT company, program_year, amount, 'Research' FROM payments_research p WHERE `+pred+`)
 				GROUP BY company, program_year ORDER BY company, program_year`, append(append([]any{}, pargs...), pargs...)...)
@@ -88,7 +89,9 @@ instead.`,
 				x.Payments += toInt(r["payments"])
 				x.ByYear[itoa(y)] = t
 				if n, ok := r["natures"].(string); ok {
-					for _, s := range strings.Split(n, ",") {
+					var ns []string
+					_ = json.Unmarshal([]byte(n), &ns)
+					for _, s := range ns {
 						if !contains(x.Natures, s) {
 							x.Natures = append(x.Natures, s)
 						}

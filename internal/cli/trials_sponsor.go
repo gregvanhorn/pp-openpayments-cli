@@ -41,6 +41,9 @@ use it for trials missing local PIs; use 'trials gaps' instead.`,
 			if len(args) == 0 {
 				return usageErr(fmt.Errorf("a sponsor/company name is required"))
 			}
+			if flags.dataSource == "local" {
+				return usageErr(fmt.Errorf("trials sponsor searches ClinicalTrials.gov live; there is no local-only equivalent (drop --data-source local)"))
+			}
 			sponsor := strings.Join(args, " ")
 			ctx, cancel, db, err := trialsCtx(cmd, flags)
 			if err != nil {
@@ -66,7 +69,10 @@ use it for trials missing local PIs; use 'trials gaps' instead.`,
 			for _, s := range upperList(splitCSVFlag(states)) {
 				region[s] = true
 			}
-			var out []map[string]any
+			if matched == nil {
+				matched = []string{}
+			}
+			out := make([]map[string]any, 0)
 			for _, t := range trials {
 				if !op.SponsorMatches(sponsor, t.Sponsor) {
 					continue // collaborator-only hits
@@ -82,7 +88,7 @@ use it for trials missing local PIs; use 'trials gaps' instead.`,
 				}
 				rows, err := queryArgs(ctx, db, `SELECT COUNT(*) payments, ROUND(COALESCE(SUM(p.amount),0),2) research_total,
 					(SELECT COUNT(DISTINCT COALESCE(i.npi,i.name)) FROM research_investigators i JOIN payments_research q ON q.record_id=i.record_id AND q.program_year=i.program_year WHERE q.nct_id = ?) paid_pis,
-					(SELECT GROUP_CONCAT(DISTINCT i.name || ' (' || COALESCE(i.city,'') || ' ' || COALESCE(i.state,'') || ')') FROM research_investigators i JOIN payments_research q ON q.record_id=i.record_id AND q.program_year=i.program_year WHERE q.nct_id = ?) pi_names
+					(SELECT COALESCE(GROUP_CONCAT(DISTINCT i.name || ' (' || COALESCE(i.city,'') || ' ' || COALESCE(i.state,'') || ')') FROM research_investigators i JOIN payments_research q ON q.record_id=i.record_id AND q.program_year=i.program_year WHERE q.nct_id = ?), '') pi_names
 					FROM payments_research p WHERE p.nct_id = ?`, t.NCTID, t.NCTID, t.NCTID)
 				if err != nil {
 					return err

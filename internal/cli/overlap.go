@@ -47,7 +47,7 @@ doctors; use 'compare' instead.`,
 				FROM payments_general p WHERE ` + w + ` AND npi IS NOT NULL AND (LOWER(company) LIKE ? OR LOWER(company) LIKE ?) GROUP BY npi`
 			ta, tb := "%"+strings.ToLower(args[0])+"%", "%"+strings.ToLower(args[1])+"%"
 			sa := append(append([]any{ta, tb}, a...), ta, tb)
-			counts, err := queryArgs(ctx, db, `WITH s AS (`+sets+`) SELECT SUM(a_total>0 AND b_total>0) both_count, SUM(a_total>0 AND b_total=0) only_a, SUM(a_total=0 AND b_total>0) only_b FROM s`, sa...)
+			counts, err := queryArgs(ctx, db, `WITH s AS (`+sets+`) SELECT COALESCE(SUM(a_total>0 AND b_total>0),0) both_count, COALESCE(SUM(a_total>0 AND b_total=0),0) only_a, COALESCE(SUM(a_total=0 AND b_total>0),0) only_b FROM s`, sa...)
 			if err != nil {
 				return err
 			}

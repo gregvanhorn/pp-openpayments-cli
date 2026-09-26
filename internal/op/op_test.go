@@ -76,7 +76,7 @@ func TestQueryValues(t *testing.T) {
 	if v.Get("limit") != "500" {
 		t.Errorf("limit must clamp to 500, got %s", v.Get("limit"))
 	}
-	if v.Get("conditions[0][operator]") != "=" || v.Get("conditions[1][value][1]") != "01/99/2024" {
+	if v.Get("conditions[0][operator]") != "=" || len(v["conditions[1][value][]"]) != 2 || v["conditions[1][value][]"][1] != "01/99/2024" {
 		t.Errorf("conditions encoded wrong: %v", v)
 	}
 	if got := v["properties[]"]; len(got) != 2 {
@@ -315,7 +315,7 @@ func TestSyncUpsertAndDeletes(t *testing.T) {
 		t.Fatalf("refresh report = %+v", rep)
 	}
 	var n int
-	_ = db.QueryRow(`SELECT COUNT(*) FROM sync_changes WHERE sync_run = ?`, rep.SyncRun).Scan(&n)
+	_ = db.QueryRow(`SELECT COUNT(*) FROM sync_changes WHERE sync_run = ? AND change IN ('added','amended','removed')`, rep.SyncRun).Scan(&n)
 	if n != 3 {
 		t.Errorf("expected 3 logged changes, got %d", n)
 	}

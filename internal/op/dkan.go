@@ -82,8 +82,10 @@ func (q Query) Values() url.Values {
 		v.Set(p+"[operator]", op)
 		switch val := c.Value.(type) {
 		case []string:
-			for j, s := range val {
-				v.Set(fmt.Sprintf("%s[value][%d]", p, j), s)
+			// Append syntax keeps list order under url.Values' key sorting
+			// (indexed [10] would sort before [2] and decode as an object).
+			for _, s := range val {
+				v.Add(p+"[value][]", s)
 			}
 		default:
 			v.Set(p+"[value]", fmt.Sprint(val))

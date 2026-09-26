@@ -66,7 +66,7 @@ use it for raw research payment rows; use 'research' instead.`,
 			switch by {
 			case "pi":
 				key = "COALESCE(i.npi, i.profile_id, i.name)"
-				cols = "MAX(i.npi) npi, MAX(i.name) name, MAX(i.specialty) specialty, MAX(i.city) city, MAX(i.state) state, GROUP_CONCAT(DISTINCT COALESCE(p.teaching_hospital_name, p.noncovered_entity, p.recipient_name)) sites"
+				cols = "MAX(i.npi) npi, MAX(i.name) name, MAX(i.specialty) specialty, MAX(i.city) city, MAX(i.state) state, GROUP_CONCAT(DISTINCT UPPER(COALESCE(p.teaching_hospital_name, p.noncovered_entity, p.recipient_name))) sites"
 			case "site":
 				key = "COALESCE(p.teaching_hospital_ccn, p.noncovered_entity, p.npi, p.recipient_name)"
 				cols = "MAX(COALESCE(p.teaching_hospital_name, p.noncovered_entity, p.recipient_name)) site, MAX(p.teaching_hospital_ccn) ccn, MAX(p.city) city, MAX(p.state) state, COUNT(DISTINCT i.npi) investigators"

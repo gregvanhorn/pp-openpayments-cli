@@ -72,16 +72,19 @@ func runYoY(cmd *cobra.Command, flags *rootFlags, f opFilter, direction int, inc
 	args = append(args, year)
 	args = append(args, a...)
 	args = append(args, year-1, year-1, year, minDelta, f.limit)
-	if !yearSynced(ctx, db, year-1) {
-		fmt.Fprintf(cmd.ErrOrStderr(), "hint: no %d payments synced; YoY needs both years (sync --years %d-%d ...)\n", year-1, year-1, year)
+	// Both years must have rows inside this scope, or every pair would read
+	// as "stopped" / "new" purely because a year is not synced.
+	for _, y := range []int{year - 1, year} {
+		var n int
+		cq := `SELECT COUNT(*) FROM (SELECT 1 FROM payments_general p WHERE ` + w + ` AND program_year = ? LIMIT 1)`
+		if err := db.QueryRowContext(ctx, cq, append(append([]any{}, a...), y)...).Scan(&n); err != nil {
+			return err
+		}
+		if n == 0 {
+			return notFoundErr(fmt.Errorf("no %d general payments synced for this scope; year-over-year needs %d and %d (e.g. sync --years %d-%d --states <ST>)", y, year-1, year, year-1, year))
+		}
 	}
 	return runLocal(ctx, cmd, flags, db, q, args...)
-}
-
-func yearSynced(ctx context.Context, db *sql.DB, year int) bool {
-	var n int
-	_ = db.QueryRowContext(ctx, `SELECT COUNT(*) FROM (SELECT 1 FROM payments_general WHERE program_year = ? LIMIT 1)`, year).Scan(&n)
-	return n > 0
 }
 
 func itoa(i int) string { return strconv.Itoa(i) }

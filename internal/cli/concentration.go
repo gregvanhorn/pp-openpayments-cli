@@ -17,7 +17,8 @@ func newNovelConcentrationCmd(flags *rootFlags) *cobra.Command {
 		Use:   "concentration <company>",
 		Short: "How concentrated a company's spend is: top-10 share, HHI and recipients to reach 50%/80%",
 		Long: `Arithmetic over a company's synced general payments grouped by --by
-(recipient, state, specialty or product): total, number of groups, top-10
+(recipient, state, specialty or product; a payment linked to several
+products is split evenly across them): total, number of groups, top-10
 share, Herfindahl-Hirschman index (sum of squared percentage shares, 0-10000)
 and how many groups account for 50% and 80% of dollars.
 
@@ -58,7 +59,12 @@ use it to list who a company pays; use 'company' instead.`,
 			if by == "recipient" {
 				label = "COALESCE(MAX(p.recipient_name), MAX(p.teaching_hospital_name))"
 			}
-			rows, err := queryArgs(ctx, db, `SELECT `+group+` k, `+label+` label, SUM(p.amount) total FROM `+from+` WHERE `+w+` GROUP BY k ORDER BY total DESC`, a...)
+			amount := "p.amount"
+			if by == "product" {
+				// Split each payment evenly across its product slots so shares sum to 100%.
+				amount = "p.amount / (SELECT COUNT(*) FROM products x WHERE x.payment_type='general' AND x.record_id=p.record_id AND x.program_year=p.program_year)"
+			}
+			rows, err := queryArgs(ctx, db, `SELECT `+group+` k, `+label+` label, SUM(`+amount+`) total FROM `+from+` WHERE `+w+` GROUP BY k ORDER BY total DESC`, a...)
 			if err != nil {
 				return err
 			}

@@ -113,9 +113,20 @@ func emitOPHints(cmd *cobra.Command, flags *rootFlags, st *store.Store, resource
 	if f := cmd.Flags().Lookup("max-age"); f != nil && f.Changed {
 		maxAge = flags.maxAge
 	}
-	if !hintIfUnsynced(cmd, st, resource) {
-		hintIfStale(cmd, st, resource, maxAge)
+	// Bulk loads and in-progress syncs populate tables before the framework
+	// sync marker is written, so only claim "never synced" when the domain
+	// table is actually empty.
+	table := resource
+	if table == "" {
+		table = "payments_general"
 	}
+	var n int
+	_ = st.DB().QueryRow(`SELECT COUNT(*) FROM (SELECT 1 FROM ` + table + ` LIMIT 1)`).Scan(&n)
+	if n == 0 {
+		hintIfUnsynced(cmd, st, resource)
+		return
+	}
+	hintIfStale(cmd, st, resource, maxAge)
 }
 
 // runLocal executes a query and prints rows through the standard output path.
@@ -124,10 +135,56 @@ func runLocal(ctx context.Context, cmd *cobra.Command, flags *rootFlags, db *sql
 	if err != nil {
 		return err
 	}
-	return printRows(cmd, flags, rows)
+	return printRowsDB(cmd, flags, db, rows)
+}
+
+func normalizeSpecialties(ctx context.Context, db *sql.DB, rows []map[string]any) {
+	var npis []any
+	for _, r := range rows {
+		if _, ok := r["specialty"]; !ok {
+			continue
+		}
+		if n, ok := r["npi"].(string); ok && n != "" {
+			npis = append(npis, n)
+		}
+	}
+	if len(npis) == 0 {
+		return
+	}
+	spec := map[string]string{}
+	for i := 0; i < len(npis); i += 500 {
+		end := i + 500
+		if end > len(npis) {
+			end = len(npis)
+		}
+		got, err := queryArgs(ctx, db, `SELECT npi, specialty FROM recipients WHERE specialty IS NOT NULL AND npi IN (`+qmarks(end-i)+`)`, npis[i:end]...)
+		if err != nil {
+			return
+		}
+		for _, g := range got {
+			spec[fmt.Sprint(g["npi"])] = fmt.Sprint(g["specialty"])
+		}
+	}
+	for _, r := range rows {
+		if n, ok := r["npi"].(string); ok {
+			if s, ok := spec[n]; ok {
+				r["specialty"] = s
+			}
+		}
+	}
 }
 
 func printRows(cmd *cobra.Command, flags *rootFlags, rows []map[string]any) error {
+	return printRowsDB(cmd, flags, nil, rows)
+}
+
+// printRowsDB is printRows with recipient specialty normalization: grouped
+// queries pick MAX(specialty), which is alphabetical, so rows carrying an
+// npi take the recipient's most frequent specialty from the recipients table.
+func printRowsDB(cmd *cobra.Command, flags *rootFlags, db *sql.DB, rows []map[string]any) error {
+	if db != nil {
+		normalizeSpecialties(cmd.Context(), db, rows)
+	}
 	if rows == nil {
 		rows = make([]map[string]any, 0)
 	}

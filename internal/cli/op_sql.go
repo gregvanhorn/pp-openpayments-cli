@@ -56,10 +56,14 @@ and Title_Case result keys are normalized to snake_case.`,
 			if strings.HasPrefix(q, "[") || flags.dataSource == "live" {
 				return runRemoteSQL(ctx, cmd, flags, q)
 			}
-			_, db, err := openOPStoreRead(ctx)
+			if _, _, err := openOPStoreRead(ctx); err != nil {
+				return err
+			}
+			db, err := openQueryOnly(defaultDBPath(opCLIName))
 			if err != nil {
 				return err
 			}
+			defer db.Close()
 			rows, err := queryLocal(ctx, db, q, limit)
 			if err != nil {
 				return usageErr(err)
@@ -71,12 +75,29 @@ and Title_Case result keys are normalized to snake_case.`,
 	return cmd
 }
 
-var writeSQLRE = regexp.MustCompile(`(?i)^\s*(insert|update|delete|drop|alter|create|replace|attach|detach|pragma|vacuum|reindex)\b`)
+var attachSQLRE = regexp.MustCompile(`(?i)\b(attach|detach|pragma|vacuum)\b`)
 
-// queryLocal runs a read-only statement and returns rows as maps.
+// openQueryOnly opens the store on a separate handle SQLite itself enforces
+// as read-only (mode=ro + query_only), so user SQL cannot write through
+// CTEs, comments or multi-statement tricks. No immutable=1, so it still sees
+// commits from a sync running in parallel.
+func openQueryOnly(path string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro&_pragma=query_only(1)&_pragma=busy_timeout(5000)")
+	if err != nil {
+		return nil, err
+	}
+	db.SetMaxOpenConns(1)
+	return db, nil
+}
+
+// queryLocal runs one read-only statement and returns rows as maps.
 func queryLocal(ctx context.Context, db *sql.DB, q string, limit int) ([]map[string]any, error) {
-	if writeSQLRE.MatchString(q) {
-		return nil, fmt.Errorf("sql is read-only: only SELECT/WITH statements are allowed")
+	q = strings.TrimRight(strings.TrimSpace(q), "; \t\n")
+	if strings.Contains(q, ";") && !quotedSemicolonsOnly(q) {
+		return nil, fmt.Errorf("sql runs exactly one statement; remove ';'")
+	}
+	if attachSQLRE.MatchString(q) {
+		return nil, fmt.Errorf("sql is read-only: ATTACH, DETACH, PRAGMA and VACUUM are not allowed")
 	}
 	rows, err := db.QueryContext(ctx, q)
 	if err != nil {
@@ -174,7 +195,11 @@ func describeSchema(ctx context.Context, db *sql.DB) ([]SchemaTable, error) {
 			}
 			st.Columns = append(st.Columns, c)
 		}
+		rerr := rows.Err()
 		rows.Close()
+		if rerr != nil {
+			return nil, rerr
+		}
 		_ = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM "+t).Scan(&st.Rows)
 		out = append(out, st)
 	}
@@ -335,4 +360,22 @@ func pageLimit(q op.Query) int {
 		return op.MaxPageSize
 	}
 	return q.Limit
+}
+
+// quotedSemicolonsOnly reports whether every ';' in q sits inside a quoted literal.
+func quotedSemicolonsOnly(q string) bool {
+	var quote rune
+	for _, r := range q {
+		switch {
+		case quote != 0:
+			if r == quote {
+				quote = 0
+			}
+		case r == '\'' || r == '"':
+			quote = r
+		case r == ';':
+			return false
+		}
+	}
+	return true
 }

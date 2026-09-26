@@ -111,5 +111,8 @@ func scanStrings(rows *sql.Rows) []string {
 			out = append(out, s.String)
 		}
 	}
+	if rows.Err() != nil {
+		return nil
+	}
 	return out
 }
